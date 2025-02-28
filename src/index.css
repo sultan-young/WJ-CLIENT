@@ -1,0 +1,22 @@
+/* 基础页面样式 */
+body {
+  margin: 0;
+  background: #f0f2f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* 主容器间距 */
+.ant-layout-content {
+  padding: 24px !important;
+  min-height: calc(100vh - 64px); /* 减去 header 高度 */
+}
+
+/* 统一按钮间距 */
+.ant-btn + .ant-btn {
+  margin-left: 8px;
+}
+
+/* 表格悬停效果 */
+.ant-table-row:hover {
+  background: #fafafa !important;
+}

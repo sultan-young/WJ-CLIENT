@@ -1,0 +1,52 @@
+.product-form-container {
+    max-width: 1200px;
+    padding: 24px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 表单元素间距 */
+  .ant-form-item {
+    margin-bottom: 20px !important;
+  }
+  
+  /* 价格输入框样式 */
+  .ant-input-number {
+    width: 200px !important;
+  }
+  
+  /* 上传组件样式 */
+  .ant-upload.ant-upload-select-picture-card {
+    width: 150px;
+    height: 150px;
+    margin-right: 8px;
+  }
+  
+  .ant-upload-list-picture-card-container {
+    width: 150px;
+    height: 150px;
+  }
+  
+  /* 标签管理样式 */
+  .tag-management .ant-select {
+    width: 100%;
+  }
+  
+  .tag-management .ant-tag {
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    background: #f0f2f5;
+    border-radius: 4px;
+  }
+  
+  /* 响应式布局 */
+  @media (max-width: 768px) {
+    .product-form-container {
+      padding: 12px;
+    }
+    
+    .ant-input-number {
+      width: 100% !important;
+    }
+  }

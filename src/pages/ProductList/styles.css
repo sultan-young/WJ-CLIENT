@@ -1,0 +1,66 @@
+/* 页面容器 */
+.product-list-page {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* 筛选栏样式 */
+  .product-list-page .filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  
+  /* 输入框宽度 */
+  .product-list-page .ant-input {
+    width: 200px;
+  }
+  
+  /* 选择器宽度 */
+  .product-list-page .ant-select {
+    width: 180px;
+  }
+  
+  /* 响应式网格布局 */
+  @media (max-width: 768px) {
+    .product-list-page .ant-list-grid {
+      grid-template-columns: repeat(1, 1fr) !important;
+    }
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .product-list-page .ant-list-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+
+  /* 抽屉表单容器 */
+.ant-drawer-body {
+    padding: 24px !important;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* 固定底部按钮 */
+  .ant-drawer-footer {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid #f0f0f0;
+    z-index: 1;
+    padding: 16px 24px;
+  }
+  
+  /* 独立页面样式 */
+  .form-page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    background: #fff;
+  }
+  
+  .form-page-container h1 {
+    margin-bottom: 24px;
+    font-size: 24px;
+  }

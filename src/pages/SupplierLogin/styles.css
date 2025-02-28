@@ -1,0 +1,55 @@
+/* 供应商登录页样式 */
+.supplier-login {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 24px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 管理员登录页样式 */
+  .admin-login {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 24px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 通用登录标题样式 */
+  .supplier-login h2,
+  .admin-login h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #1890ff;
+  }
+  
+  /* 通用输入框样式 */
+  .supplier-login .ant-input,
+  .admin-login .ant-input {
+    width: 100%;
+  }
+  
+  /* 通用按钮样式 */
+  .supplier-login .ant-btn,
+  .admin-login .ant-btn {
+    width: 100%;
+    margin-top: 16px;
+  }
+  
+  /* 管理员登录页特殊样式 */
+  .admin-login h2 {
+    color: #722ed1; /* 紫色区分管理员 */
+  }
+  
+  .admin-login .ant-btn[type="primary"] {
+    background-color: #722ed1;
+    border-color: #722ed1;
+  }
+  
+  .admin-login .ant-btn[type="primary"]:hover {
+    background-color: #9254de;
+    border-color: #9254de;
+  }

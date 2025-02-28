@@ -1,0 +1,54 @@
+/* 卡片容器样式 */
+.product-card {
+    margin-bottom: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* SKU编号样式 */
+  .product-card .sku {
+    color: #666;
+    font-size: 0.9em;
+  }
+  
+  /* 库存数量样式 */
+  .product-card .stock {
+    margin: 12px 0;
+    color: #1890ff;
+    font-weight: 500;
+  }
+  
+  /* 标签容器样式 */
+  .product-card .tags {
+    margin-top: 12px;
+  }
+  
+  /* 单个标签间距 */
+  .product-card .ant-tag {
+    margin-bottom: 4px;
+  }
+  
+  /* 图片预览组样式 */
+  .product-card .ant-image-preview-root {
+    cursor: pointer;
+    transition: opacity 0.3s;
+  }
+  
+  .product-card .ant-image-preview-root:hover {
+    opacity: 0.8;
+  }
+
+  /* 操作按钮样式 */
+.card-actions button:first-child{
+  margin-right: -20px;
+}
+
+.card-actions button:nth-child(2){
+  margin-right: -20px;
+}
+
+/* 防止按钮遮挡卡片内容 */
+.ant-card-head {
+  position: relative;
+  z-index: 0;
+}
