@@ -4,17 +4,13 @@ import { mockProducts } from "../api/mock/products";
 const fakeDelay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // 获取商品列表（Mock 实现）
-export const getProducts = async (filters = {}) => {
-  await fakeDelay(500);
+export const getProducts = async (filters = "") => {
+  await fakeDelay(200);
   let data = [...mockProducts];
+  console.log("filters", filters)
   
   // 模拟筛选逻辑
-  if (filters.sku) {
-    data = data.filter(p => p.sku.includes(filters.sku));
-  }
-  if (filters.supplierId) {
-    data = data.filter(p => p.suppliers.includes(filters.supplierId));
-  }
+  data = data.filter(p => p.sku.includes(filters));
   return { data };
 };
 

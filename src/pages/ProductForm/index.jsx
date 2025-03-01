@@ -71,7 +71,6 @@ const ProductForm = forwardRef((props, ref) => {
     
     try {
       const res = await getSuppliers();
-      console.log(res, 111)
       setSuppliers(res.data.map(item => ({
         label: item.name,
         value: item.id

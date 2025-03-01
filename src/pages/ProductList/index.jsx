@@ -6,22 +6,22 @@ import "./styles.css";
 import ProductForm from "../ProductForm";
 import { updateProduct, deleteProduct } from '../../services/productService';
 import { getSuppliers } from "../../services/supplierService";
+import SearchBox from "../../components/searchBox";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [filters, setFilters] = useState({});
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [suppliers, setSuppliers] = useState([]);
-  const [messageApi, contextHolder] = message.useMessage();
 
   // 处理删除操作
   const handleDelete = async (productId) => {
     try {
       await deleteProduct(productId);
-      messageApi.info('删除成功');
+      message.info('删除成功');
       // 这里需要更新商品列表状态或重新获取数据
     } catch (error) {
-        messageApi.error('删除失败');
+        message.error('删除失败');
     }
   };
 
@@ -30,14 +30,13 @@ const ProductList = () => {
       const res = await getSuppliers(); // 替换为真实接口
       setSuppliers(res.data);
     } catch (error) {
-        messageApi.error('获取供应商列表失败');
+        message.error('获取供应商列表失败');
     }
   };
 
   // 处理更新提交
   const handleUpdateSubmit = async () => {
     try {
-        console.log(formRef, 'formRef')
       const values = await formRef.current.validateFields();
       const updatedProduct = {
         ...selectedProduct,
@@ -86,15 +85,24 @@ const ProductList = () => {
 
   return (
     <div className="product-list-page">
-      <div className="filters">
+      <SearchBox onSearch={(value) => setFilters(value)}></SearchBox>
+      {/* <div className="filters">
         <Input
           placeholder="按 SKU 搜索"
+          allowClear
           onChange={(e) => setFilters({ ...filters, sku: e.target.value })}
         />
-        
+
+        <Input
+          placeholder="按商品名或标签模糊搜索"
+          allowClear
+          onChange={(e) => setFilters({ ...filters, sku: e.target.value })}
+        />
+
         <Select
           placeholder="按供应商筛选"
           onChange={(value) => setFilters({ ...filters, supplierId: value })}
+          allowClear
           options={suppliers.map(s => ({
             label: s.name,
             value: s.id
@@ -103,7 +111,7 @@ const ProductList = () => {
         <Button type="primary" onClick={() => setDrawerVisible(true)}>
             录入商品
         </Button>
-      </div>
+      </div> */}
 
       <List
         grid={{ gutter: 16, column: 3 }}
