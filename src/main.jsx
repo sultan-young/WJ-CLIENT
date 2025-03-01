@@ -12,14 +12,8 @@ dayjs.locale('zh-cn')
 // 引入 Ant Design 样式
 import 'antd/dist/reset.css'
 
-// 模拟登录状态
-const mockAuth = {
-  role: 'admin', // 切换为 'supplier' 测试供应商视图
-  id: 'user-123'
-};
-
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <AuthProvider value={{ user: mockAuth }}>
+  <AuthProvider>
     <App />
   </AuthProvider>
 )

@@ -6,8 +6,9 @@ import {
   Routes,
   useNavigate,
   useLocation,
+  Outlet,
 } from "react-router-dom";
-import { Layout, Menu, Slider, theme } from "antd";
+import { Layout, Menu, Slider, Spin, theme } from "antd";
 import ProductList from "./pages/ProductList";
 import ProductForm from "./pages/ProductForm";
 import SupplierLogin from "./pages/SupplierLogin";
@@ -15,6 +16,8 @@ import AdminLogin from "./pages/AdminLogin";
 import { HomeOutlined, UserOutlined } from "@ant-design/icons";
 import { Header } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
+import { useAuth } from "./context/AuthContext";
+import Unauthorized from "./pages/Unauthorized";
 
 const { Content } = Layout;
 
@@ -26,8 +29,8 @@ const AppSider = () => {
   const [selectKey, setSelectKey] = useState("");
 
   useEffect(() => {
-    if ((location.pathname === "/")) {
-      onClick({key: 'productPool'})
+    if (location.pathname === "/") {
+      onClick({ key: "productPool" });
     }
   }, []);
 
@@ -89,12 +92,7 @@ const AppLayout = () => {
       {/* 右侧内容区域 */}
       <Layout>
         <Content>
-          <Routes>
-            <Route path="/productPool" element={<ProductList />} />
-            <Route path="/add-product" element={<ProductForm />} />
-            <Route path="/supplier-login" element={<SupplierLogin />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
-          </Routes>
+          <Outlet />
         </Content>
       </Layout>
     </Layout>
@@ -102,9 +100,27 @@ const AppLayout = () => {
 };
 
 function App() {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '20%' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <Router>
-      <AppLayout></AppLayout>
+      <Routes>
+        <Route path="/login/admin" element={<AdminLogin />} />
+        <Route path="/login/supplier" element={<SupplierLogin/>} />
+        <Route path="/unauthorized" element={<Unauthorized />}></Route>
+        <Route path="/v1" element={<AppLayout />}>
+          <Route path="productPool" element={<ProductList />} />
+          <Route path="add-product" element={<ProductForm />} />
+        </Route>
+      </Routes>
     </Router>
   );
 }

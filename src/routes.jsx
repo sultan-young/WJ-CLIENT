@@ -3,6 +3,7 @@ import ProductList from "./pages/ProductList";
 import ProductForm from "./pages/ProductForm";
 import SupplierLogin from "./pages/SupplierLogin";
 import AdminLogin from "./pages/AdminLogin";
+import Unauthorized from "./pages/Unauthorized";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
     path: "/admin-login",
     element: <AdminLogin />,
   },
+  {
+    path: '/unauthorized',
+    element: <Unauthorized />
+  }
 ]);
 
 export default router;

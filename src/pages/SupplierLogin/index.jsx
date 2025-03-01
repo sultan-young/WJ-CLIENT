@@ -1,36 +1,28 @@
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { Form, Input, Button, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { supplierLogin } from '../../services/supplierService';
 import './styles.css';
 
 const SupplierLogin = () => {
-  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  // 模拟登录接口
-  const mockLogin = (values) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (values.email === 'supplier@test.com' && values.password === '123456') {
-          resolve({ success: true });
-        } else {
-          resolve({ success: false });
-        }
-      }, 1000);
-    });
-  };
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
 
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      const res = await mockLogin(values);
-      
-      if (res.success) {
-        message.success('登录成功');
-        navigate('/'); // 跳转到供应商管理页
-      } else {
-        message.error('邮箱或密码错误');
-      }
+      const user = await supplierLogin(values);
+      login(user);
+
+      // 登录后重定向到之前访问的页面
+      const redirectTo = location.state?.from || '/';
+      navigate(redirectTo);
+      message.success('登录成功');
+    } catch (error) {
+      message.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -38,33 +30,13 @@ const SupplierLogin = () => {
 
   return (
     <div className="supplier-login">
-      <h2>供应商登录</h2>
-      <Form
-        name="supplier-login"
-        initialValues={{ remember: true }}
-        onFinish={onFinish}
-        autoComplete="off"
-      >
+      <h2>供应商身份校验</h2>
+      <Form onFinish={onFinish}>
         <Form.Item
-          label="邮箱"
-          name="email"
-          rules={[
-            { required: true, message: '请输入邮箱' },
-            { type: 'email', message: '邮箱格式不正确' }
-          ]}
-        >
-          <Input placeholder="请输入注册邮箱" />
-        </Form.Item>
-
-        <Form.Item
-          label="密码"
           name="password"
-          rules={[
-            { required: true, message: '请输入密码' },
-            { min: 6, message: '密码至少6位' }
-          ]}
+          rules={[{ required: true, message: '请输入密码' }]}
         >
-          <Input.Password placeholder="请输入密码" />
+          <Input.Password />
         </Form.Item>
 
         <Form.Item>
