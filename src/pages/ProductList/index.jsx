@@ -4,7 +4,7 @@ import ProductCard from "../../components/ProductCard";
 import { createProduct, getProducts } from "../../services/productService";
 import "./styles.css";
 import ProductForm from "../ProductForm";
-import { updateProduct, deleteProduct } from '../../services/productService';
+import { updateProduct, deleteProduct } from "../../services/productService";
 import { getSuppliers } from "../../services/supplierService";
 import SearchBox from "../../components/searchBox";
 
@@ -13,15 +13,16 @@ const ProductList = () => {
   const [filters, setFilters] = useState({});
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [suppliers, setSuppliers] = useState([]);
+  const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
 
   // 处理删除操作
   const handleDelete = async (productId) => {
     try {
       await deleteProduct(productId);
-      message.info('删除成功');
+      message.info("删除成功");
       // 这里需要更新商品列表状态或重新获取数据
     } catch (error) {
-        message.error('删除失败');
+      message.error("删除失败");
     }
   };
 
@@ -30,7 +31,7 @@ const ProductList = () => {
       const res = await getSuppliers(); // 替换为真实接口
       setSuppliers(res.data);
     } catch (error) {
-        message.error('获取供应商列表失败');
+      message.error("获取供应商列表失败");
     }
   };
 
@@ -41,25 +42,27 @@ const ProductList = () => {
       const updatedProduct = {
         ...selectedProduct,
         ...values,
-        id: selectedProduct.id
+        id: selectedProduct.id,
       };
-      
+
       await updateProduct(updatedProduct);
-      message.success('更新成功');
+      message.success("更新成功");
       setSelectedProduct(null);
       // 这里需要更新商品列表状态或重新获取数据
     } catch (error) {
-      console.error('更新失败:', error);
+      console.error("更新失败:", error);
     }
   };
 
   const loadData = async () => {
     const res = await getProducts(filters);
-    fetchSuppliers()
+    fetchSuppliers();
     setProducts(res.data);
   };
 
-  useEffect(() => { loadData(); }, [filters]);
+  useEffect(() => {
+    loadData();
+  }, [filters]);
 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRef = useRef();
@@ -69,23 +72,30 @@ const ProductList = () => {
       await formRef.current.submit();
       setDrawerVisible(false);
     } catch (error) {
-      console.error('表单验证失败');
+      console.error("表单验证失败");
     }
   };
 
   const onClickUpdate = (productInfo) => {
-    setSelectedProduct(productInfo)
-  }
+    setSelectedProduct(productInfo);
+  };
 
   const onSubmitSuccess = () => {
-    message.success('商品创建成功');
+    message.success("商品创建成功");
     // 这里可以刷新商品列表数据
-    loadData()
+    loadData();
+  };
+
+  const toggleSubmitBtnLoadings = (loading) => {
+    setSubmitBtnLoadings(loading)
   }
 
   return (
     <div className="product-list-page">
       <SearchBox onSearch={(value) => setFilters(value)}></SearchBox>
+      <Button type="primary" onClick={() => setDrawerVisible(true)}>
+        录入商品
+      </Button>
       {/* <div className="filters">
         <Input
           placeholder="按 SKU 搜索"
@@ -108,9 +118,6 @@ const ProductList = () => {
             value: s.id
           }))}
         />
-        <Button type="primary" onClick={() => setDrawerVisible(true)}>
-            录入商品
-        </Button>
       </div> */}
 
       <List
@@ -118,7 +125,12 @@ const ProductList = () => {
         dataSource={products}
         renderItem={(item) => (
           <List.Item>
-            <ProductCard product={item} onUpdate={() => onClickUpdate(item)} onDelete={() => handleDelete(item.id)} key={item.id}/>
+            <ProductCard
+              product={item}
+              onUpdate={() => onClickUpdate(item)}
+              onDelete={() => handleDelete(item.id)}
+              key={item.id}
+            />
           </List.Item>
         )}
       />
@@ -128,15 +140,16 @@ const ProductList = () => {
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
-          <div style={{ textAlign: 'right' }}>
-            <Button 
+          <div style={{ textAlign: "right" }}>
+            <Button
               style={{ marginRight: 8 }}
               onClick={() => setDrawerVisible(false)}
             >
               取消
             </Button>
-            <Button 
+            <Button
               type="primary"
+              loading={submitBtnLoadings}
               onClick={handleDrawerSubmit}
             >
               提交商品
@@ -149,27 +162,25 @@ const ProductList = () => {
           hideSubmitButton
           onCreate={createProduct}
           onUpdate={updateProduct}
+          toggleSubmitBtnLoadings={toggleSubmitBtnLoadings}
           onSubmitSuccess={onSubmitSuccess}
         />
       </Drawer>
 
       <Drawer
-        title={`更新商品 - ${selectedProduct?.sku || ''}`}
+        title={`更新商品 - ${selectedProduct?.sku || ""}`}
         width={720}
         open={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
         footer={
-          <div style={{ textAlign: 'right' }}>
-            <Button 
+          <div style={{ textAlign: "right" }}>
+            <Button
               style={{ marginRight: 8 }}
               onClick={() => setSelectedProduct(null)}
             >
               取消
             </Button>
-            <Button 
-              type="primary"
-              onClick={handleUpdateSubmit}
-            >
+            <Button type="primary" onClick={handleUpdateSubmit}>
               提交更新
             </Button>
           </div>

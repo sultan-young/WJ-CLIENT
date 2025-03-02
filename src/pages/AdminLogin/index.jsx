@@ -2,32 +2,22 @@ import { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import './styles.css';
+import { adminLogin } from '../../services/authService';
 
 const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // 模拟管理员登录接口
-  const mockAdminLogin = (values) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (values.username === 'admin' && values.password === 'admin123') {
-          resolve({ success: true });
-        } else {
-          resolve({ success: false });
-        }
-      }, 1000);
-    });
-  };
 
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      const res = await mockAdminLogin(values);
+      const res = await adminLogin(values);
+      
       
       if (res.success) {
         message.success('管理员登录成功');
-        navigate('/admin/dashboard'); // 跳转到管理后台
+        navigate('/v1/productPool'); // 跳转到管理后台
       } else {
         message.error('用户名或密码错误');
       }

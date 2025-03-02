@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // 添加加载状态
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const storedUser = JSON.parse(localStorage.getItem('userInfo'));
 
     if (storedUser) {
       setUser(storedUser);
@@ -15,7 +15,6 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (!storedUser && !location.pathname.includes('login')) {
-      console.log('未登录', console.log(location.pathname))
       logout()
     }
     setLoading(false); // 加载完成
