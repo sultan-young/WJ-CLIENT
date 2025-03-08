@@ -144,6 +144,7 @@ const ProductList = () => {
             <ProductCard
               product={item}
               onUpdate={() => onClickUpdate(item)}
+              onSuccessCb={loadData}
               onDelete={() => handleDelete(item.id)}
               key={item.id}
             />

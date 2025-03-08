@@ -1,12 +1,23 @@
-import { Card, Tag, Image, Button, Popconfirm, Tooltip } from "antd";
+import {
+  Card,
+  Tag,
+  Image,
+  Button,
+  Popconfirm,
+  Tooltip,
+  InputNumber,
+  message,
+} from "antd";
 import { useAuth } from "../../context/AuthContext"; // 假设有权限上下文
 import "./styles.css";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
-import { useMemo } from "react";
+import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
+import { useMemo, useState } from "react";
+import { updateProduct } from "../../services/productService";
 
-const ProductCard = ({ product, onDelete, onUpdate }) => {
+const ProductCard = ({ product, onDelete, onUpdate, onSuccessCb }) => {
   const { Meta } = Card;
   const { user } = useAuth(); // 获取当前用户信息
+  const [stockCount, setStockCount] = useState(product.stock);
   // const isAdmin = user?.role === 'admin';
   const isAdmin = true;
   const imageUrls = useMemo(() => {
@@ -97,9 +108,47 @@ const ProductCard = ({ product, onDelete, onUpdate }) => {
           justifyContent: "space-between",
         }}
       >
-        <div className="stock">库存: {product.stock}</div>
+        <div className="stock">
+          库存: {product.stock}
+          {isAdmin && (
+            <Popconfirm
+              title="库存编辑"
+              icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
+              onConfirm={async () => {
+                const res = { ...product, stock: stockCount };
+                try {
+                  await updateProduct(res);
+                  message.success("更新库存成功");
+                  onSuccessCb?.();
+                  // 这里需要更新商品列表状态或重新获取数据
+                } catch (error) {
+                  console.error("更新库存失败:", error);
+                }
+              }}
+              okText="确定"
+              cancelText="取消"
+              description={
+                <InputNumber
+                  min={1}
+                  defaultValue={stockCount}
+                  onChange={(v) => {
+                    setStockCount(v);
+                  }}
+                  changeOnWheel
+                />
+              }
+            >
+              <FormOutlined
+                style={{
+                  marginLeft: "8px",
+                  cursor: "pointer",
+                }}
+              />
+            </Popconfirm>
+          )}
+        </div>
 
-        <div className="tags" text={"111"}>
+        <div className="tags">
           {product.tags.length > 2 ? (
             <Tooltip title={product.tags?.join(" , ")}>{tagsDom}</Tooltip>
           ) : (
