@@ -5,20 +5,9 @@ import http from "./http";
 
 // 供应商登录
 export const supplierLogin = async (credentials) => {
-  try {
-    const response = await http.post('/auth/login/supplier', {
-        supplierId: credentials
-    });
-    const { token, userInfo } = response.data;
-
-    // 存储 Token 和用户信息
-    localStorage.setItem('token', token);
-    localStorage.setItem('userInfo', JSON.stringify(userInfo));
-
-    return userInfo;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || '登录失败');
-  }
+  const response = await http.post('/auth/login/supplier', {
+    supplierId: credentials
+});
 };
 
 // 管理员登录

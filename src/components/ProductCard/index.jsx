@@ -24,13 +24,12 @@ const ProductCard = ({
   const { Meta } = Card;
   const { user } = useAuth(); // 获取当前用户信息
   const [stockCount, setStockCount] = useState(product.stock);
-  // const isAdmin = user?.role === 'admin';
-  const isAdmin = true;
+  const isAdmin = user?.name === "admin";
+  // const isAdmin = true;
   const imageUrls = useMemo(() => {
     return (product?.images || []).map((item) => item.url);
   }, [product]);
 
-  console.log(user, isSingleShow);
   const tagsDom = (
     <>
       {product.tags.map((tag) => (

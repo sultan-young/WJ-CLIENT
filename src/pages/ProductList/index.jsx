@@ -44,13 +44,11 @@ const ProductList = () => {
   const handleUpdateSubmit = async () => {
     try {
       const values = await formRef.current.validateFields();
-      console.log(values);
       const updatedProduct = {
         ...selectedProduct,
         ...values,
         id: selectedProduct.id,
       };
-      console.log(values, updatedProduct, selectedProduct);
 
       await updateProduct(updatedProduct);
       message.success("更新成功");
@@ -85,7 +83,6 @@ const ProductList = () => {
   };
 
   const onClickUpdate = (productInfo) => {
-    console.log(productInfo, "product");
     setSelectedProduct(productInfo);
   };
 
@@ -105,7 +102,6 @@ const ProductList = () => {
     setProducts(res.result);
   };
 
-  console.log(products.length, 1213213);
   return (
     <div className="product-list-page">
       <SearchBox
