@@ -2,10 +2,16 @@ import { Card, Tag, Image, Button, Popconfirm } from "antd";
 import { useAuth } from '../../context/AuthContext'; // 假设有权限上下文
 import "./styles.css";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { useMemo } from "react";
 
 const ProductCard = ({ product, onDelete, onUpdate }) => {
   const { user } = useAuth(); // 获取当前用户信息
   const isAdmin = user?.role === 'admin';
+  const imageUrls = useMemo(() => {
+    return (product?.images || []).map(item => item.url)
+  }, [product])
+
+  console.log(imageUrls)
 
   return (
     <Card
@@ -35,8 +41,8 @@ const ProductCard = ({ product, onDelete, onUpdate }) => {
       }
       className="product-card"
     >
-      <Image.PreviewGroup items={product.images}>
-        <Image src={product.images[0]} wrapperStyle={{width: "100%"}} />
+      <Image.PreviewGroup width={200} items={imageUrls}>
+        <Image width={200} src={imageUrls[0]} wrapperStyle={{width: "100%"}} />
       </Image.PreviewGroup>
       
       <div className="stock">库存: {product.stock}</div>

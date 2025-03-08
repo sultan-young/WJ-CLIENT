@@ -81,14 +81,13 @@ const ProductList = () => {
   };
 
   const onSubmitSuccess = () => {
-    message.success("商品创建成功");
     // 这里可以刷新商品列表数据
     loadData();
   };
 
   const toggleSubmitBtnLoadings = (loading) => {
-    setSubmitBtnLoadings(loading)
-  }
+    setSubmitBtnLoadings(loading);
+  };
 
   return (
     <div className="product-list-page">
@@ -160,7 +159,6 @@ const ProductList = () => {
         <ProductForm
           ref={formRef}
           hideSubmitButton
-          onCreate={createProduct}
           onUpdate={updateProduct}
           toggleSubmitBtnLoadings={toggleSubmitBtnLoadings}
           onSubmitSuccess={onSubmitSuccess}

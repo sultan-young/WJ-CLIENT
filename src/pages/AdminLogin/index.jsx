@@ -12,15 +12,8 @@ const AdminLogin = () => {
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      const res = await adminLogin(values);
-      
-      
-      if (res.success) {
-        message.success('管理员登录成功');
-        navigate('/v1/productPool'); // 跳转到管理后台
-      } else {
-        message.error('用户名或密码错误');
-      }
+      await adminLogin(values);
+      navigate('/v1/productPool'); // 跳转到管理后台
     } finally {
       setLoading(false);
     }

@@ -28,8 +28,10 @@ export const deleteProductImage = async (ids) => {
 
 // 创建商品（Mock 实现）
 export const createProduct = async (productData) => {
-  const newProduct = { ...productData };
-  return { data: newProduct };
+  const result = await http.post('/products/create', {
+    ...productData,
+  })
+  return true;
 };
 
 export const deleteProduct = async (productId) => {

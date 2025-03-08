@@ -1,3 +1,4 @@
+import { message } from "antd";
 import http from "./http";
 
 
@@ -24,11 +25,13 @@ export const supplierLogin = async (credentials) => {
 export const adminLogin = async (credentials) => {
   try {
     const response = await http.post('/auth/login/admin', credentials);
-    const { token, userInfo } = response.data;
-
+    console.log(response, 111)
+    const { token, userInfo } = response;
+    console.log(token, userInfo)
     // 存储 Token 和用户信息
     localStorage.setItem('token', token);
     localStorage.setItem('userInfo', JSON.stringify(userInfo || {}));
+    message.success('管理员登录成功');
 
     return response;
   } catch (error) {

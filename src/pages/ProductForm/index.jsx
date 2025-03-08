@@ -19,6 +19,7 @@ import { getSuppliers } from "../../services/supplierService";
 import "./styles.css";
 import axios from "axios";
 import {
+  createProduct,
   deleteProductImage,
   getUploadProductImageSign,
 } from "../../services/productService";
@@ -47,13 +48,7 @@ const ProductForm = forwardRef((props, ref) => {
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
     submit: async () => {
-      try {
-        const values = await form.validateFields();
-        const productData = formatSubmitData(values);
-        return productData;
-      } catch (error) {
-        throw new Error("表单验证失败");
-      }
+      handleSubmit()
     },
     reset: () => form.resetFields(),
     validateFields: async () => {
@@ -105,18 +100,18 @@ const ProductForm = forwardRef((props, ref) => {
   const formatSubmitData = (values) => ({
     ...values,
     tags,
-    images: fileList.map((file) => file.url || file.thumbUrl),
+    images: imageUrlList,
     suppliers: values.suppliers || [],
   });
 
   // 提交处理
-  const handleSubmit = async (values) => {
+  const handleSubmit = async () => {
     try {
       setLoading(true);
-      const productData = formatSubmitData(values);
-      await props.onCreate(productData);
+      const productData = formatSubmitData(form.getFieldValue());
+      createProduct(productData)
       onSubmitSuccess?.();
-      if (!initialValues) form.resetFields();
+      // if (!initialValues) form.resetFields();
     } finally {
       setLoading(false);
     }
