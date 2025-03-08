@@ -8,6 +8,7 @@ import {
   InputNumber,
   message,
 } from "antd";
+import styled from "styled-components";
 import { useAuth } from "../../context/AuthContext"; // 假设有权限上下文
 import "./styles.css";
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
@@ -30,6 +31,7 @@ const ProductCard = ({
     return (product?.images || []).map((item) => item.url);
   }, [product]);
 
+  console.log(isSingleShow, 111);
   const tagsDom = (
     <>
       {product.tags.map((tag) => (
@@ -39,20 +41,17 @@ const ProductCard = ({
       ))}
     </>
   );
+
+  const DealCard = styled(Card)({
+    ".ant-card-cover": {
+      ...(isSingleShow ? { maxHeight: "500px !important",height:'500px' } : {}),
+    },
+  });
   return (
-    <Card
+    <DealCard
       // title={product.nameCN}
       variant="borderless"
-      // style={{
-      //   "&.ant-card-cover": {
-      //     ...(isSingleShow ? { maxHeight: "420px" } : {}),
-      //   },
-      // }}
       cover={
-        // <img
-        //   alt="example"
-        //  src={imageUrls[0]}
-        // />
         <Image.PreviewGroup
           width={200}
           items={imageUrls}
@@ -180,7 +179,7 @@ const ProductCard = ({
           )}
         </div>
       </div>
-    </Card>
+    </DealCard>
   );
 };
 

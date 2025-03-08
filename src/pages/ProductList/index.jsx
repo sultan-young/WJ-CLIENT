@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Input, Select, Button, List, Drawer, message } from "antd";
+import { Input, Select, Button, List, Drawer, message,ConfigProvider } from "antd";
+import { AntDesignOutlined } from '@ant-design/icons';
 import ProductCard from "../../components/ProductCard";
 import {
   getProducts,
@@ -74,7 +75,9 @@ const ProductList = () => {
   const formRef = useRef();
 
   const handleDrawerSubmit = async () => {
+   
     try {
+      await formRef.current.validateFields()
       await formRef.current.submit();
       setDrawerVisible(false);
     } catch (error) {
@@ -104,37 +107,20 @@ const ProductList = () => {
 
   return (
     <div className="product-list-page">
+      <div style={{display:'flex',alignItems:'center',marginBottom:'24px'}}>
       <SearchBox
         onSearch={(data) => {
           onSearch(data);
         }}
+        style={{flex:'1 1 0'}}
       ></SearchBox>
-      <Button type="primary" onClick={() => setDrawerVisible(true)}>
+      <Button type="primary" onClick={() => setDrawerVisible(true)} icon={<AntDesignOutlined />} className="add-button">
         录入商品
-      </Button>
-      {/* <div className="filters">
-        <Input
-          placeholder="按 SKU 搜索"
-          allowClear
-          onChange={(e) => setFilters({ ...filters, sku: e.target.value })}
-        />
-
-        <Input
-          placeholder="按商品名或标签模糊搜索"
-          allowClear
-          onChange={(e) => setFilters({ ...filters, sku: e.target.value })}
-        />
-
-        <Select
-          placeholder="按供应商筛选"
-          onChange={(value) => setFilters({ ...filters, supplierId: value })}
-          allowClear
-          options={suppliers.map(s => ({
-            label: s.name,
-            value: s.id
-          }))}
-        />
-      </div> */}
+      </Button> 
+       
+      </div>
+      
+       
 
       <List
         grid={{ gutter: 16, column: products?.length > 1 ? 3 : 1 }}
@@ -143,7 +129,7 @@ const ProductList = () => {
           <List.Item>
             <ProductCard
               product={item}
-              isSingleShow={!products?.length > 1}
+              isSingleShow={!(products?.length > 1)}
               onUpdate={() => onClickUpdate(item)}
               onSuccessCb={loadData}
               onDelete={() => handleDelete(item.id)}

@@ -64,3 +64,22 @@
     margin-bottom: 24px;
     font-size: 24px;
   }
+  
+  .add-button{
+    > span {
+      position: relative;
+    }
+    &::before {
+      content: '';
+      background: linear-gradient(135deg, #715ab7, #6975dc);
+      position: absolute;
+      inset: -1px;
+      opacity: 1;
+      transition: all 0.3s;
+      border-radius: inherit;
+    }
+
+    &:hover::before {
+      opacity: 0;
+    }
+  }

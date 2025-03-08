@@ -1,7 +1,8 @@
 .search-box-container {
   max-width: 600px;
-  margin: 2rem auto;
+  margin: 0 auto;
   padding: 0 20px;
+  flex: 1 1 0;
 }
 
 .search-input-wrapper {
@@ -73,3 +74,5 @@
 .search-box-container.focused {
   animation: inputFocus 0.3s ease forwards;
 }
+
+
