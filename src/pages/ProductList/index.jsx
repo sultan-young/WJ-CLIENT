@@ -24,6 +24,7 @@ const ProductList = () => {
     try {
       await deleteProduct(productId);
       message.info("删除成功");
+      loadData();
       // 这里需要更新商品列表状态或重新获取数据
     } catch (error) {
       message.error("删除失败");
@@ -43,6 +44,7 @@ const ProductList = () => {
   const handleUpdateSubmit = async () => {
     try {
       const values = await formRef.current.validateFields();
+      console.log(values);
       const updatedProduct = {
         ...selectedProduct,
         ...values,
@@ -50,12 +52,10 @@ const ProductList = () => {
       };
       console.log(values, updatedProduct, selectedProduct);
 
-      const res = await updateProduct(updatedProduct);
-      if (res.data) {
-        message.success("更新成功");
-        setSelectedProduct(null);
-        loadData();
-      }
+      await updateProduct(updatedProduct);
+      message.success("更新成功");
+      setSelectedProduct(null);
+      loadData();
       // 这里需要更新商品列表状态或重新获取数据
     } catch (error) {
       console.error("更新失败:", error);

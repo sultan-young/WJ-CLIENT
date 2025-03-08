@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Dropdown, Space } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 import "./styles.css"; // 创建对应的CSS文件
 
 const SearchBox = ({ onSearch }) => {
@@ -7,7 +8,6 @@ const SearchBox = ({ onSearch }) => {
   const [defaultItem, setDefaultItem] = useState(0);
 
   const handleSubmit = (e) => {
-    console.log(searchTerm, 111);
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     // performSearch();
     const data = {
@@ -80,7 +80,7 @@ const SearchBox = ({ onSearch }) => {
       key: 0,
     },
     {
-      label: "sku查询",
+      label: "tag查询",
       key: 1,
     },
   ];
@@ -89,21 +89,28 @@ const SearchBox = ({ onSearch }) => {
       className={`search-box-container ${isFocused ? "focused" : ""}`}
       onSubmit={handleSubmit}
     >
-      <Dropdown
-        menu={{
-          items,
-          selectable: true,
-          defaultSelectedKeys: defaultItem,
-          onClick: (e) => {
-            console.log(e.key, "查询type");
-            setDefaultItem(e?.key);
-          },
-        }}
-        trigger={["click"]}
-      >
-        <Space>{items?.find((a) => a.key == defaultItem)?.label}</Space>
-      </Dropdown>
       <div className="search-input-wrapper">
+        <Dropdown
+          menu={{
+            items,
+            selectable: true,
+            defaultSelectedKeys: defaultItem,
+            onClick: (e) => {
+              console.log(e.key, "查询type");
+              setDefaultItem(e?.key);
+            },
+          }}
+          trigger={["click"]}
+        >
+          <Space>
+            <span
+              style={{ color: "#1677ff", fontSize: "14px", marginLeft: "14px" }}
+            >
+              {items?.find((a) => a.key == defaultItem)?.label}
+            </span>
+            <DownOutlined style={{ color: "#1677ff" }} />
+          </Space>
+        </Dropdown>
         <input
           type="text"
           autoFocus

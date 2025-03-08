@@ -48,7 +48,7 @@ const ProductForm = forwardRef((props, ref) => {
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
     submit: async () => {
-      handleSubmit()
+      handleSubmit();
     },
     reset: () => form.resetFields(),
     validateFields: async () => {
@@ -69,7 +69,17 @@ const ProductForm = forwardRef((props, ref) => {
     if (initialValues) {
       form.setFieldsValue(initialValues);
       setTags(initialValues.tags || []);
-      setFileList((initialValues.images || []).map(({ url, uid, name }) => ({ url, name, status: 'done', uid })));
+      const images = (initialValues.images || []).map(
+        ({ url, uid, name, picturebedId }) => ({
+          url,
+          name,
+          status: "done",
+          uid,
+          picturebedId,
+        })
+      );
+      setFileList(images);
+      setImageUrlList(images);
     }
   };
 
@@ -109,7 +119,7 @@ const ProductForm = forwardRef((props, ref) => {
     try {
       setLoading(true);
       const productData = formatSubmitData(form.getFieldValue());
-      createProduct(productData)
+      createProduct(productData);
       onSubmitSuccess?.();
       // if (!initialValues) form.resetFields();
     } finally {
@@ -274,6 +284,7 @@ const ProductForm = forwardRef((props, ref) => {
       {/* 图片上传 */}
       <Form.Item
         label="商品图片"
+        names="images"
         rules={[{ required: true, message: "请至少上传一张图片" }]}
       >
         <Upload
@@ -283,8 +294,7 @@ const ProductForm = forwardRef((props, ref) => {
           beforeUpload={beforeUpload}
           onRemove={onRemoveImage}
           onChange={({ fileList }) => {
-            console.log(fileList)
-            setFileList(fileList)
+            setFileList(fileList);
           }}
           accept="image/*"
           multiple

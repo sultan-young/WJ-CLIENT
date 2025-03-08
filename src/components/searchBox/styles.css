@@ -20,7 +20,7 @@
 }
 
 .search-input {
-  width: 100%;
+  flex: 1 1 0;
   padding: 15px 25px;
   border: none;
   background: transparent;
@@ -33,6 +33,7 @@
 
 .search-input::placeholder {
   color: #a0aec0;
+  font-size: 14px;
 }
 
 .search-button {

@@ -36,11 +36,13 @@ export const createProduct = async (productData) => {
   return true;
 };
 
-export const deleteProduct = async (productId) => {
-  // 模拟删除请求
-  await fakeDelay(500);
+// 删除 
+export const deleteProduct = async (id) => {
+  const result = await http.post('/products/delete', {
+    id
+  })
   return {
-    success: true
+    data: result
   };
 };
 
