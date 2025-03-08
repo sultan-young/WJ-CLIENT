@@ -99,7 +99,9 @@ const ProductList = () => {
   };
 
   const onSearch = async (data) => {
-    const res = await searchProduct(data);
+    const res = await searchProduct({
+     queryParams: data
+    });
     setProducts(res.result);
   };
   return (

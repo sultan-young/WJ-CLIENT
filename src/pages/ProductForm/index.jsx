@@ -23,6 +23,7 @@ import {
   deleteProductImage,
   getUploadProductImageSign,
 } from "../../services/productService";
+import { getShelfList } from "../../services/shelfList";
 
 const { Option } = Select;
 
@@ -41,6 +42,8 @@ const ProductForm = forwardRef((props, ref) => {
   const [tags, setTags] = useState([]);
   const [inputTag, setInputTag] = useState("");
   const [suppliers, setSuppliers] = useState([]);
+  // 货架列表
+  const [shelfList, setShelfList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [imageUrlList, setImageUrlList] = useState([]);
   const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
@@ -62,6 +65,7 @@ const ProductForm = forwardRef((props, ref) => {
   useEffect(() => {
     initializeForm();
     loadSuppliers();
+    loadShelfList()
   }, []);
 
   // 初始化表单值
@@ -90,9 +94,19 @@ const ProductForm = forwardRef((props, ref) => {
       setSuppliers(
         res.map((item) => ({
           label: item.name,
-          value: item._id,
+          value: item.id,
         }))
       );
+    } catch (error) {
+      console.error("加载供应商失败:", error);
+    }
+  };
+
+  // 加载货架数据
+  const loadShelfList = async () => {
+    try {
+      const res = await getShelfList();
+      setShelfList(res);
     } catch (error) {
       console.error("加载供应商失败:", error);
     }
@@ -217,13 +231,13 @@ const ProductForm = forwardRef((props, ref) => {
         ...initialValues,
       }}
     >
-      {/* SKU 编号 */}
+      {/* 商品名称 */}
       <Form.Item
-        label="SKU编号"
-        name="sku"
-        rules={[{ required: true, message: "请输入SKU编号" }]}
+        label="中文名称"
+        name="nameCN"
+        rules={[{ required: true, message: "请输入中文名称" }]}
       >
-        <Input placeholder="例：SKU-2023001" />
+        <Input />
       </Form.Item>
 
       {/* 供应商选择（仅管理员可见） */}
@@ -240,19 +254,6 @@ const ProductForm = forwardRef((props, ref) => {
           />
         </Form.Item>
       }
-
-      {/* 商品名称 */}
-      <Form.Item
-        label="中文名称"
-        name="nameCN"
-        rules={[{ required: true, message: "请输入中文名称" }]}
-      >
-        <Input />
-      </Form.Item>
-
-      <Form.Item label="英文名称" name="nameEN">
-        <Input />
-      </Form.Item>
 
       {/* 库存和价格 */}
       <Space wrap>
@@ -280,6 +281,15 @@ const ProductForm = forwardRef((props, ref) => {
           <InputNumber min={0} precision={2} />
         </Form.Item>
       </Space>
+
+      {/* SKU 编号 */}
+      <Form.Item
+        label="所在货架"
+        name="shelf"
+        rules={[{ required: true, message: "请选择所属货架" }]}
+      >
+        <Select labelInValue style={{ width: 120 }} options={shelfList} />
+      </Form.Item>
 
       {/* 图片上传 */}
       <Form.Item
