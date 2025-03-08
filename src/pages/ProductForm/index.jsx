@@ -106,9 +106,15 @@ const ProductForm = forwardRef((props, ref) => {
   const loadShelfList = async () => {
     try {
       const res = await getShelfList();
-      setShelfList(res);
+      setShelfList(res.map(item => ({
+        label: `${item.value}  (${item.label})`,
+        value: item.value
+      })));
+      setTimeout(() => {
+        console.log(shelfList, 111)
+      }, 30);
     } catch (error) {
-      console.error("加载供应商失败:", error);
+      console.error("加载货架失败:", error);
     }
   };
 
@@ -126,6 +132,7 @@ const ProductForm = forwardRef((props, ref) => {
     tags,
     images: imageUrlList,
     suppliers: values.suppliers || [],
+    shelf: values.shelf,
   });
 
   // 提交处理
@@ -133,6 +140,7 @@ const ProductForm = forwardRef((props, ref) => {
     try {
       setLoading(true);
       const productData = formatSubmitData(form.getFieldValue());
+      console.log(1111111111, form.getFieldValue())
       createProduct(productData);
       onSubmitSuccess?.();
       // if (!initialValues) form.resetFields();
@@ -288,7 +296,7 @@ const ProductForm = forwardRef((props, ref) => {
         name="shelf"
         rules={[{ required: true, message: "请选择所属货架" }]}
       >
-        <Select labelInValue style={{ width: 120 }} options={shelfList} />
+        <Select style={{ width: 120 }} options={shelfList} />
       </Form.Item>
 
       {/* 图片上传 */}

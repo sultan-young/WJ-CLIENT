@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Input, Select, Button, List, Drawer, message } from "antd";
 import ProductCard from "../../components/ProductCard";
 import {
-  createProduct,
   getProducts,
   searchProduct,
 } from "../../services/productService";
@@ -49,6 +48,7 @@ const ProductList = () => {
         ...values,
         id: selectedProduct.id,
       };
+      console.log(updatedProduct, '1')
 
       await updateProduct(updatedProduct);
       message.success("更新成功");
