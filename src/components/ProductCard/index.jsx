@@ -117,7 +117,7 @@ const ProductCard = ({
     >
       <Meta
         // avatar={<Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />}
-        title={product.nameCN}
+        title={`${product.nameCN}(${product.sku})`}
         // description={product.notes}
       />
       {/* <Image.PreviewGroup width={200} items={imageUrls}>
