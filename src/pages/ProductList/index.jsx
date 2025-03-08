@@ -99,9 +99,13 @@ const ProductList = () => {
   };
 
   const onSearch = async (data) => {
-    const res = await searchProduct(data);
+    const res = await searchProduct({
+      queryParams: data,
+    });
     setProducts(res.result);
   };
+
+  console.log(products.length, 1213213);
   return (
     <div className="product-list-page">
       <SearchBox
@@ -137,12 +141,13 @@ const ProductList = () => {
       </div> */}
 
       <List
-        grid={{ gutter: 16, column: 3 }}
+        grid={{ gutter: 16, column: products?.length > 1 ? 3 : 1 }}
         dataSource={products}
         renderItem={(item) => (
           <List.Item>
             <ProductCard
               product={item}
+              isSingleShow={!products?.length > 1}
               onUpdate={() => onClickUpdate(item)}
               onSuccessCb={loadData}
               onDelete={() => handleDelete(item.id)}

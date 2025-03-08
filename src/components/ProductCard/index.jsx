@@ -14,7 +14,13 @@ import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 import { useMemo, useState } from "react";
 import { updateProduct } from "../../services/productService";
 
-const ProductCard = ({ product, onDelete, onUpdate, onSuccessCb }) => {
+const ProductCard = ({
+  product,
+  onDelete,
+  onUpdate,
+  onSuccessCb,
+  isSingleShow,
+}) => {
   const { Meta } = Card;
   const { user } = useAuth(); // 获取当前用户信息
   const [stockCount, setStockCount] = useState(product.stock);
@@ -24,7 +30,7 @@ const ProductCard = ({ product, onDelete, onUpdate, onSuccessCb }) => {
     return (product?.images || []).map((item) => item.url);
   }, [product]);
 
-  console.log(user);
+  console.log(user, isSingleShow);
   const tagsDom = (
     <>
       {product.tags.map((tag) => (
@@ -38,16 +44,31 @@ const ProductCard = ({ product, onDelete, onUpdate, onSuccessCb }) => {
     <Card
       // title={product.nameCN}
       variant="borderless"
+      // style={{
+      //   "&.ant-card-cover": {
+      //     ...(isSingleShow ? { maxHeight: "420px" } : {}),
+      //   },
+      // }}
       cover={
         // <img
         //   alt="example"
         //  src={imageUrls[0]}
         // />
-        <Image.PreviewGroup width={200} items={imageUrls}>
+        <Image.PreviewGroup
+          width={200}
+          items={imageUrls}
+          style={{
+            ...(isSingleShow ? { maxWidth: "400px", maxHeight: "420px" } : {}),
+          }}
+        >
           <Image
             width={200}
             src={imageUrls[0]}
-            wrapperStyle={{ width: "100%" }}
+            wrapperStyle={{
+              width: "100%",
+              maxWidth: "400px",
+              maxHeight: "420px",
+            }}
           />
         </Image.PreviewGroup>
       }
