@@ -11,7 +11,9 @@ export const getProducts = async (filters = "") => {
   // let data = [...mockProducts];
   // console.log("filters", filters)
   const data = await http.post("products/list");
-  return { data };
+  return {
+    data
+  };
 };
 
 export const getUploadProductImageSign = async () => {
@@ -37,11 +39,25 @@ export const createProduct = async (productData) => {
 export const deleteProduct = async (productId) => {
   // 模拟删除请求
   await fakeDelay(500);
-  return { success: true };
+  return {
+    success: true
+  };
 };
 
 export const updateProduct = async (productData) => {
   // 模拟更新请求
-  await fakeDelay(500);
-  return { data: productData };
+  const result = await http.post('/products/update', productData)
+  return {
+    data: result
+  };
+};
+
+
+// 查询
+export const searchProduct = async (productData) => {
+  const result = await http.post('/products/search', productData)
+  console.log(result, '更新')
+  return {
+    result
+  };
 };

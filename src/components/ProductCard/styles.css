@@ -4,7 +4,20 @@
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
-  
+  /* 卡片内容主题 */
+  .ant-card-body{
+    padding:16px 16px 0px !important
+  }
+  /* 图片样式 */
+  .ant-card-cover{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* max-height: 280px; */
+    height: 280px;
+    overflow: hidden;
+    /* max-width: 280px; */
+  }
   /* SKU编号样式 */
   .product-card .sku {
     color: #666;
@@ -20,12 +33,12 @@
   
   /* 标签容器样式 */
   .product-card .tags {
-    margin-top: 12px;
+    /* margin-top: 12px; */
   }
   
   /* 单个标签间距 */
   .product-card .ant-tag {
-    margin-bottom: 4px;
+    /* margin-bottom: 4px; */
   }
   
   /* 图片预览组样式 */

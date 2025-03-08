@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Input, Select, Button, List, Drawer, message } from "antd";
 import ProductCard from "../../components/ProductCard";
-import { createProduct, getProducts } from "../../services/productService";
+import {
+  createProduct,
+  getProducts,
+  searchProduct,
+} from "../../services/productService";
 import "./styles.css";
 import ProductForm from "../ProductForm";
 import { updateProduct, deleteProduct } from "../../services/productService";
@@ -44,10 +48,14 @@ const ProductList = () => {
         ...values,
         id: selectedProduct.id,
       };
+      console.log(values, updatedProduct, selectedProduct);
 
-      await updateProduct(updatedProduct);
-      message.success("更新成功");
-      setSelectedProduct(null);
+      const res = await updateProduct(updatedProduct);
+      if (res.data) {
+        message.success("更新成功");
+        setSelectedProduct(null);
+        loadData();
+      }
       // 这里需要更新商品列表状态或重新获取数据
     } catch (error) {
       console.error("更新失败:", error);
@@ -77,6 +85,7 @@ const ProductList = () => {
   };
 
   const onClickUpdate = (productInfo) => {
+    console.log(productInfo, "product");
     setSelectedProduct(productInfo);
   };
 
@@ -89,9 +98,17 @@ const ProductList = () => {
     setSubmitBtnLoadings(loading);
   };
 
+  const onSearch = async (data) => {
+    const res = await searchProduct(data);
+    setProducts(res.result);
+  };
   return (
     <div className="product-list-page">
-      <SearchBox onSearch={(value) => setFilters(value)}></SearchBox>
+      <SearchBox
+        onSearch={(data) => {
+          onSearch(data);
+        }}
+      ></SearchBox>
       <Button type="primary" onClick={() => setDrawerVisible(true)}>
         录入商品
       </Button>

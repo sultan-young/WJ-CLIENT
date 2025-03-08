@@ -86,14 +86,20 @@ const AppLayout = () => {
     <Layout
       style={{ minHeight: "100vh", maxHeight: "100vh", overflow: "hidden" }}
     >
+       <Header style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="demo-logo" />
+        <div style={{ color: "white", fontSize: '16px' }}>造物无界库存管理系统</div>
+      </Header>
       {/* 左侧菜单 */}
-      <AppSider />
-
-      {/* 右侧内容区域 */}
       <Layout>
-        <Content>
-          <Outlet />
-        </Content>
+        <AppSider />
+
+        {/* 右侧内容区域 */}
+        <Layout>
+          <Content>
+            <Outlet />
+          </Content>
+        </Layout>
       </Layout>
     </Layout>
   );

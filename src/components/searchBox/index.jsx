@@ -1,12 +1,20 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Dropdown, Space } from "antd";
 import "./styles.css"; // 创建对应的CSS文件
 
-const SearchBox = ({ onSearch = () => {} }) => {
+const SearchBox = ({ onSearch }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [defaultItem, setDefaultItem] = useState(0);
 
   const handleSubmit = (e) => {
+    console.log(searchTerm, 111);
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-    performSearch();
+    // performSearch();
+    const data = {
+      type: defaultItem,
+      content: searchTerm.trim(),
+    };
+    onSearch(data);
     e.preventDefault();
   };
 
@@ -17,7 +25,11 @@ const SearchBox = ({ onSearch = () => {} }) => {
 
   // 执行搜索逻辑
   const performSearch = useCallback(() => {
-    onSearch(searchTerm.trim());
+    const data = {
+      type: defaultItem,
+      content: searchTerm.trim(),
+    };
+    onSearch(data);
   }, [searchTerm, onSearch]);
 
   // 自动聚焦逻辑
@@ -32,12 +44,12 @@ const SearchBox = ({ onSearch = () => {} }) => {
   }, [autoFocus]);
 
   // 防抖搜索
-  useEffect(() => {
-    debounceTimerRef.current = setTimeout(performSearch, 1000);
-    return () => {
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-    };
-  }, [searchTerm, performSearch]);
+  // useEffect(() => {
+  //   debounceTimerRef.current = setTimeout(performSearch, 1000);
+  //   return () => {
+  //     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+  //   };
+  // }, [searchTerm, performSearch]);
 
   // 初始化和事件监听
   useEffect(() => {
@@ -62,11 +74,35 @@ const SearchBox = ({ onSearch = () => {} }) => {
 
   // 处理键盘事件
 
+  const items = [
+    {
+      label: "模糊查询",
+      key: 0,
+    },
+    {
+      label: "sku查询",
+      key: 1,
+    },
+  ];
   return (
     <form
       className={`search-box-container ${isFocused ? "focused" : ""}`}
       onSubmit={handleSubmit}
     >
+      <Dropdown
+        menu={{
+          items,
+          selectable: true,
+          defaultSelectedKeys: defaultItem,
+          onClick: (e) => {
+            console.log(e.key, "查询type");
+            setDefaultItem(e?.key);
+          },
+        }}
+        trigger={["click"]}
+      >
+        <Space>{items?.find((a) => a.key == defaultItem)?.label}</Space>
+      </Dropdown>
       <div className="search-input-wrapper">
         <input
           type="text"

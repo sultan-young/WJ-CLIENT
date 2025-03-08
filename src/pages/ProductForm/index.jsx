@@ -69,7 +69,7 @@ const ProductForm = forwardRef((props, ref) => {
     if (initialValues) {
       form.setFieldsValue(initialValues);
       setTags(initialValues.tags || []);
-      setFileList((initialValues.images || []).map((url) => ({ url })));
+      setFileList((initialValues.images || []).map(({ url, uid, name }) => ({ url, name, status: 'done', uid })));
     }
   };
 
@@ -177,7 +177,7 @@ const ProductForm = forwardRef((props, ref) => {
     const removeImageIds = imageUrlList
       .filter((item) => item.uid === uid)
       .map((item) => item.picturebedId);
-      
+
     changeSubmitBtnLoadings(true);
     deleteProductImage(removeImageIds)
       .then((res) => {
@@ -282,7 +282,10 @@ const ProductForm = forwardRef((props, ref) => {
           fileList={fileList}
           beforeUpload={beforeUpload}
           onRemove={onRemoveImage}
-          onChange={({ fileList }) => setFileList(fileList)}
+          onChange={({ fileList }) => {
+            console.log(fileList)
+            setFileList(fileList)
+          }}
           accept="image/*"
           multiple
           maxCount={5}
