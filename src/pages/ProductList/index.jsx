@@ -44,13 +44,11 @@ const ProductList = () => {
   const handleUpdateSubmit = async () => {
     try {
       const values = await formRef.current.validateFields();
-      console.log(values);
       const updatedProduct = {
         ...selectedProduct,
         ...values,
         id: selectedProduct.id,
       };
-      console.log(values, updatedProduct, selectedProduct);
 
       await updateProduct(updatedProduct);
       message.success("更新成功");
@@ -85,7 +83,6 @@ const ProductList = () => {
   };
 
   const onClickUpdate = (productInfo) => {
-    console.log(productInfo, "product");
     setSelectedProduct(productInfo);
   };
 
@@ -104,6 +101,7 @@ const ProductList = () => {
     });
     setProducts(res.result);
   };
+
   return (
     <div className="product-list-page">
       <SearchBox
@@ -139,13 +137,15 @@ const ProductList = () => {
       </div> */}
 
       <List
-        grid={{ gutter: 16, column: 3 }}
+        grid={{ gutter: 16, column: products?.length > 1 ? 3 : 1 }}
         dataSource={products}
         renderItem={(item) => (
           <List.Item>
             <ProductCard
               product={item}
+              isSingleShow={!products?.length > 1}
               onUpdate={() => onClickUpdate(item)}
+              onSuccessCb={loadData}
               onDelete={() => handleDelete(item.id)}
               key={item.id}
             />
