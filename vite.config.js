@@ -6,9 +6,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000', // 后端开发服务器地址
+        target: 'http://192.168.1.4:5000', // 后端开发服务器地址
         changeOrigin: true
       }
     }
-  }
+  },
 })
