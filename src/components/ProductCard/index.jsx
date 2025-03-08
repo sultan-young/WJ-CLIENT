@@ -39,13 +39,17 @@ const ProductCard = ({ product, onDelete, onUpdate, onSuccessCb }) => {
       // title={product.nameCN}
       variant="borderless"
       cover={
-        <img
-          alt="example"
-          // src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-          src={imageUrls[0]}
-          // width={280}
-          // style={{width:200,height:200}}
-        />
+        // <img
+        //   alt="example"
+        //  src={imageUrls[0]}
+        // />
+        <Image.PreviewGroup width={200} items={imageUrls}>
+          <Image
+            width={200}
+            src={imageUrls[0]}
+            wrapperStyle={{ width: "100%" }}
+          />
+        </Image.PreviewGroup>
       }
       actions={
         isAdmin
