@@ -51,7 +51,7 @@ const ProductForm = forwardRef((props, ref) => {
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
     submit: async () => {
-      handleSubmit();
+      await handleSubmit();
     },
     reset: () => form.resetFields(),
     validateFields: async () => {
@@ -65,7 +65,7 @@ const ProductForm = forwardRef((props, ref) => {
   useEffect(() => {
     initializeForm();
     loadSuppliers();
-    loadShelfList()
+    loadShelfList();
   }, []);
 
   // 初始化表单值
@@ -106,12 +106,14 @@ const ProductForm = forwardRef((props, ref) => {
   const loadShelfList = async () => {
     try {
       const res = await getShelfList();
-      setShelfList(res.map(item => ({
-        label: `${item.value}  (${item.label})`,
-        value: item.value
-      })));
+      setShelfList(
+        res.map((item) => ({
+          label: `${item.value}  (${item.label})`,
+          value: item.value,
+        }))
+      );
       setTimeout(() => {
-        console.log(shelfList, 111)
+        console.log(shelfList, 111);
       }, 30);
     } catch (error) {
       console.error("加载货架失败:", error);
@@ -135,13 +137,27 @@ const ProductForm = forwardRef((props, ref) => {
     shelf: values.shelf,
   });
 
+  const resetAll = async () => {
+    setFileList([]);
+    setTags([]);
+    setInputTag("");
+    setSuppliers([]);
+    // 货架列表
+    setShelfList([]);
+    setLoading(false);
+    setImageUrlList([]);
+    setSubmitBtnLoadings(false);
+    form.resetFields();
+  };
+
   // 提交处理
   const handleSubmit = async () => {
+    await form.validateFields();
     try {
       setLoading(true);
       const productData = formatSubmitData(form.getFieldValue());
-      console.log(1111111111, form.getFieldValue())
-      createProduct(productData);
+      await createProduct(productData);
+      resetAll()
       onSubmitSuccess?.();
       // if (!initialValues) form.resetFields();
     } finally {
@@ -170,6 +186,7 @@ const ProductForm = forwardRef((props, ref) => {
     formData.append("sign", sign.sign);
     formData.append("id", sign.id);
     formData.append("ts", sign.ts);
+    formData.append("compress", true);
 
     changeSubmitBtnLoadings(true);
     // 发起文件上传请求

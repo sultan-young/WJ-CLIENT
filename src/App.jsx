@@ -52,6 +52,17 @@ const AppSider = () => {
       ],
     },
     {
+      key: "orderManagement",
+      icon: <HomeOutlined />,
+      label: "订单管理",
+      children: [
+        {
+          key: "createOrder",
+          label: "派单",
+        },
+      ],
+    },
+    {
       key: "about",
       icon: <UserOutlined />,
       label: "About",

@@ -5,8 +5,7 @@ const fakeDelay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // 获取商品列表（Mock 实现）
 export const getProducts = async (filters = "") => {
-  console.log(filters, "filter");
-  const data = await http.post("products/list");
+  const data = await http.post("/products/list");
   return {
     data
   };

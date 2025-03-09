@@ -49,10 +49,9 @@ const ProductList = () => {
         ...values,
         id: selectedProduct.id,
       };
-      console.log(updatedProduct, '1')
-
       await updateProduct(updatedProduct);
       message.success("更新成功");
+      formRef.current.reset()
       setSelectedProduct(null);
       loadData();
       // 这里需要更新商品列表状态或重新获取数据
@@ -75,9 +74,7 @@ const ProductList = () => {
   const formRef = useRef();
 
   const handleDrawerSubmit = async () => {
-   
     try {
-      await formRef.current.validateFields()
       await formRef.current.submit();
       setDrawerVisible(false);
     } catch (error) {
