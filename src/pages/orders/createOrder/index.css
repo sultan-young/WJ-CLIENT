@@ -1,0 +1,31 @@
+.product-image-card .ant-badge {
+    display: block;
+    width: 100%;
+}
+.product-image-card .ant-image {
+    width: 100%;
+}
+.product-card {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.product-card-title {
+    margin-top: 4px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 120px;
+
+}
+.product-card-desc {
+    margin-top: 4px;
+    color: #666666;
+    font-size: 12px;
+}
+.product-image-badge {
+
+}

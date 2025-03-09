@@ -18,6 +18,8 @@ import { Header } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import { useAuth } from "./context/AuthContext";
 import Unauthorized from "./pages/Unauthorized";
+import OrderList from "./pages/orders/orderList";
+import { PreloadDataProvider } from "./context/AppContext";
 
 const { Content } = Layout;
 
@@ -57,8 +59,8 @@ const AppSider = () => {
       label: "订单管理",
       children: [
         {
-          key: "createOrder",
-          label: "派单",
+          key: "orderList",
+          label: "订单管理",
         },
       ],
     },
@@ -97,9 +99,11 @@ const AppLayout = () => {
     <Layout
       style={{ minHeight: "100vh", maxHeight: "100vh", overflow: "hidden" }}
     >
-       <Header style={{ display: 'flex', alignItems: 'center' }}>
+      <Header style={{ display: "flex", alignItems: "center" }}>
         <div className="demo-logo" />
-        <div style={{ color: "white", fontSize: '16px' }}>造物无界库存管理系统</div>
+        <div style={{ color: "white", fontSize: "16px" }}>
+          造物无界库存管理系统
+        </div>
       </Header>
       {/* 左侧菜单 */}
       <Layout>
@@ -121,24 +125,27 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', marginTop: '20%' }}>
+      <div style={{ textAlign: "center", marginTop: "20%" }}>
         <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/login/admin" element={<AdminLogin />} />
-        <Route path="/login/supplier" element={<SupplierLogin/>} />
-        <Route path="/unauthorized" element={<Unauthorized />}></Route>
-        <Route path="/v1" element={<AppLayout />}>
-          <Route path="productPool" element={<ProductList />} />
-          <Route path="add-product" element={<ProductForm />} />
-        </Route>
-      </Routes>
-    </Router>
+    <PreloadDataProvider>
+      <Router>
+        <Routes>
+          <Route path="/login/admin" element={<AdminLogin />} />
+          <Route path="/login/supplier" element={<SupplierLogin />} />
+          <Route path="/unauthorized" element={<Unauthorized />}></Route>
+          <Route path="/v1" element={<AppLayout />}>
+            <Route path="productPool" element={<ProductList />} />
+            <Route path="add-product" element={<ProductForm />} />
+            <Route path="orderList" element={<OrderList />} />
+          </Route>
+        </Routes>
+      </Router>
+    </PreloadDataProvider>
   );
 }
 

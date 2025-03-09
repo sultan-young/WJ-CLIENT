@@ -9,13 +9,13 @@ import {
   message,
 } from "antd";
 import styled from "styled-components";
-import { useAuth } from "../../context/AuthContext"; // 假设有权限上下文
+import { useAuth } from "../../../context/AuthContext"; // 假设有权限上下文
 import "./styles.css";
 import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 import { useMemo, useState } from "react";
-import { updateProduct } from "../../services/productService";
+import { updateProduct } from "../../../services/productService";
 
-const ProductCard = ({
+const ProductCardForPreview = ({
   product,
   onDelete,
   onUpdate,
@@ -183,4 +183,4 @@ const ProductCard = ({
   );
 };
 
-export default ProductCard;
+export default ProductCardForPreview;

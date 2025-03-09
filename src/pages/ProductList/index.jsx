@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Input, Select, Button, List, Drawer, message,ConfigProvider } from "antd";
 import { AntDesignOutlined } from '@ant-design/icons';
-import ProductCard from "../../components/ProductCard";
 import {
   getProducts,
   searchProduct,
@@ -11,6 +10,8 @@ import ProductForm from "../ProductForm";
 import { updateProduct, deleteProduct } from "../../services/productService";
 import { getSuppliers } from "../../services/supplierService";
 import SearchBox from "../../components/searchBox";
+import OrderList from "../orders/orderList";
+import ProductCardForPreview from "../../components/Card/ProductCardForPreview";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -124,7 +125,7 @@ const ProductList = () => {
         dataSource={products}
         renderItem={(item) => (
           <List.Item>
-            <ProductCard
+            <ProductCardForPreview
               product={item}
               isSingleShow={!(products?.length > 1)}
               onUpdate={() => onClickUpdate(item)}
