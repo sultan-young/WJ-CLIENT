@@ -1,5 +1,6 @@
 import React, {
   forwardRef,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -19,16 +20,20 @@ import {
   Col,
   Image,
   Badge,
+  Spin,
+  Empty,
 } from "antd";
 import "./index.css";
 import { mockList } from "./util";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import ExportForm from "./exportOrder";
+import { getProducts, searchProduct } from "../../../services/productService";
 const { Meta } = Card;
 
 const CreateOrder = forwardRef((props, ref) => {
   const [createOrderDrawer, openCreateOrderDrawer] = useState(false);
   const selectSupplierFormRef = useRef();
+  const [supplierId, setSupplierId] = useState("");
   const selectOrderFormRef = useRef(null);
   const exportOrderFormRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,6 +52,7 @@ const CreateOrder = forwardRef((props, ref) => {
     // 选择供应商阶段
     if (currentStep === 0) {
       await selectSupplierFormRef.current.validateFields();
+      setSupplierId(selectSupplierFormRef.current.getFieldValue().supplier);
     }
     // 选择商品阶段
     if (currentStep === 1) {
@@ -68,8 +74,6 @@ const CreateOrder = forwardRef((props, ref) => {
   };
 
   const submitOrder = async () => {
-    const supplierId = selectSupplierFormRef.current.getFieldValue().supplier;
-
     const orderList = selectOrderFormRef.current.getValues().map((item) => ({
       sku: item.sku,
       id: item.id,
@@ -87,15 +91,10 @@ const CreateOrder = forwardRef((props, ref) => {
     try {
       // downloadAsPDF
       // Export as image
-      await exportOrderFile();
-
       // Mock API call to submit data
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      alert("订单已提交成功，并已导出内容！");
     } catch (error) {
       console.error("Error during submission:", error);
-      alert("提交订单时出错");
     } finally {
       setIsSubmitting(false);
     }
@@ -140,7 +139,7 @@ const CreateOrder = forwardRef((props, ref) => {
       </div>
 
       <div style={{ display: currentStep === 1 ? "block" : "none" }}>
-        <SelectOrder ref={selectOrderFormRef} data={mockList} />
+        <SelectOrder ref={selectOrderFormRef} supplierId={supplierId} />
       </div>
       <div style={{ display: currentStep === 2 ? "block" : "none" }}>
         <ExportForm
@@ -174,8 +173,36 @@ const SelectSupplier = React.forwardRef((props, ref) => {
   );
 });
 // 选择订单
-const SelectOrder = React.forwardRef(({ data }, ref) => {
+const SelectOrder = React.forwardRef(({ supplierId }, ref) => {
   const [quantities, setQuantities] = useState({});
+  const [productList, setProductList] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    setProductList([]);
+    const fetchData = async () => {
+      if (!supplierId) {
+        setProductList([]);
+        return;
+      }
+      try {
+        const result = await searchProduct({
+          queryParams: {
+            type: 9,
+            content: supplierId,
+          },
+        });
+        setProductList(result.result || []);
+      } catch (error) {
+      } finally {
+        setLoading(false); // 确保在异步操作完成后设置加载状态为 false
+      }
+    };
+
+    fetchData();
+  }, [supplierId]);
+
   useImperativeHandle(ref, () => ({
     verifySelectStatus: () => {
       const sum = Object.values(quantities).reduce(
@@ -185,7 +212,7 @@ const SelectOrder = React.forwardRef(({ data }, ref) => {
       return sum > 0;
     },
     getValues: () => {
-      const selectedCards = data
+      const selectedCards = productList
         .map((item, index) => ({ ...item, count: quantities[index] }))
         .filter((item) => item.count > 0);
       return selectedCards;
@@ -199,58 +226,68 @@ const SelectOrder = React.forwardRef(({ data }, ref) => {
       [index]: Math.max((prev[index] || 0) + delta, 0),
     }));
   };
-  const selectedCards = data.filter((_, index) => quantities[index] > 0);
+  const selectedCards = productList.filter((_, index) => quantities[index] > 0);
 
   return (
-    <div className="product-image-card" style={{ padding: "20px" }}>
-      <Row gutter={16}>
-        {data.map((item, index) => (
-          <Col span={4} key={index} style={{ marginBottom: 16 }}>
-            <Badge count={quantities[index]}>
-              <div className="product-card">
-                <Image.PreviewGroup>
-                  {item.images.map((item) => (
-                    <Image
-                      key={item.picturebedId}
-                      style={{ objectFit: "cover", height: "150px" }}
-                      src={item.url}
-                    />
-                  ))}
-                </Image.PreviewGroup>
-                <span className="product-card-title">{`${item.nameCN}(${item.sku})`}</span>
-                <span className="product-card-desc">{`仓库剩余库存 ${item.stock}`}</span>
-                <div style={{ textAlign: "center", marginTop: 4 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: 8,
-                      marginBottom: "10px",
-                    }}
-                  >
-                    <Space size="large">
-                      <Space.Compact>
-                        <Button
-                          disabled={!quantities[index]}
-                          onClick={(e) => handleQuantityChange(e, index, -1)}
-                          icon={<MinusOutlined />}
-                        />
-                        <Button variant="text">{quantities[index] || 0}</Button>
-                        <Button
-                          onClick={(e) => handleQuantityChange(e, index, 1)}
-                          icon={<PlusOutlined />}
-                        />
-                      </Space.Compact>
-                    </Space>
+    <Spin
+      spinning={loading}
+      className="product-image-card"
+      style={{ padding: "20px" }}
+    >
+      {productList.length ? (
+        <Row gutter={16}>
+          {productList.map((item, index) => (
+            <Col span={4} key={index} style={{ marginBottom: 16 }}>
+              <Badge count={quantities[index]}>
+                <div className="product-card">
+                  <Image.PreviewGroup>
+                    {item.images.map((item) => (
+                      <Image
+                        key={item.picturebedId}
+                        style={{ objectFit: "cover", height: "150px" }}
+                        src={item.url}
+                      />
+                    ))}
+                  </Image.PreviewGroup>
+                  <span className="product-card-title">{`${item.nameCN}(${item.sku})`}</span>
+                  <span className="product-card-desc">{`仓库剩余库存 ${item.stock}`}</span>
+                  <div style={{ textAlign: "center", marginTop: 4 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: "10px",
+                      }}
+                    >
+                      <Space size="large">
+                        <Space.Compact>
+                          <Button
+                            disabled={!quantities[index]}
+                            onClick={(e) => handleQuantityChange(e, index, -1)}
+                            icon={<MinusOutlined />}
+                          />
+                          <Button variant="text">
+                            {quantities[index] || 0}
+                          </Button>
+                          <Button
+                            onClick={(e) => handleQuantityChange(e, index, 1)}
+                            icon={<PlusOutlined />}
+                          />
+                        </Space.Compact>
+                      </Space>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Badge>
-          </Col>
-        ))}
-      </Row>
-    </div>
+              </Badge>
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <Empty />
+      )}
+    </Spin>
   );
 });
 

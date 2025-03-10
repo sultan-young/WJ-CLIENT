@@ -4,8 +4,8 @@ import http from "./http";
 const fakeDelay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // 获取商品列表（Mock 实现）
-export const getProducts = async (filters = "") => {
-  const data = await http.post("/products/list");
+export const getProducts = async (payload) => {
+  const data = await http.post("/products/list", payload);
   return {
     data
   };
@@ -53,6 +53,14 @@ export const updateProduct = async (productData) => {
 // 查询
 export const searchProduct = async (productData) => {
   const result = await http.post('/products/search', productData)
+  return {
+    result
+  };
+};
+
+// 代理导出图片
+export const exportImage = async (imageUrls = []) => {
+  const result = await http.post('/proxy/exportImg', imageUrls)
   return {
     result
   };
