@@ -25,6 +25,7 @@ import {
 import "./index.css";
 import { mockList } from "./util";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
+import ExportForm from "./exportOrder";
 const { Meta } = Card;
 
 const CreateOrder = forwardRef((props, ref) => {
@@ -123,10 +124,15 @@ const CreateOrder = forwardRef((props, ref) => {
         <SelectOrder ref={selectOrderFormRef} data={mockList} />
       </div>
       <div style={{ display: currentStep === 2 ? "block" : "none" }}>
-        <ShowSelectOrder
+        {/* <ShowSelectOrder
+          supplierForm={selectSupplierFormRef}
+          orderForm={selectOrderFormRef}
+        /> */}
+        <ExportForm
           supplierForm={selectSupplierFormRef}
           orderForm={selectOrderFormRef}
         />
+        {/* <Test /> */}
       </div>
     </Drawer>
   );
