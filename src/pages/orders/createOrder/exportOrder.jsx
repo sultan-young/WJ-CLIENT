@@ -1,10 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import html2canvas from "html2canvas";
+import dayjs from "dayjs";
 import { jsPDF } from "jspdf";
 import { Table, Button, Row, Col, Input, DatePicker } from "antd";
 import { usePreloadData } from "../../../context/AppContext";
 
-export default ({ supplierForm, orderForm }) => {
+export default forwardRef(({ supplierForm, orderForm }, ref) => {
   const { supplier: supplierId } = supplierForm.current
     ? supplierForm?.current?.getFieldValue()
     : "";
@@ -15,8 +22,16 @@ export default ({ supplierForm, orderForm }) => {
 
   const contentRef = useRef(null);
   const cardRef = useRef(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // 暴露方法给父组件
+  useImperativeHandle(ref, () => ({
+    exportAsImage,
+    exportAsPDF,
+    downloadAsImage,
+    downloadAsPDF,
+    exportOrderFile,
+  }));
 
   // 预加载所有图片
   useEffect(() => {
@@ -172,41 +187,22 @@ export default ({ supplierForm, orderForm }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Export as image
-      const imageData = await exportAsImage();
-
-      // Export as PDF
-      const pdfData = await exportAsPDF();
-
-      // Here you would typically send the form data along with the exported files
-      console.log("Image data available:", !!imageData);
-      console.log("PDF data available:", !!pdfData);
-
-      // Mock API call to submit data
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      alert("订单已提交成功，并已导出内容！");
-    } catch (error) {
-      console.error("Error during submission:", error);
-      alert("提交订单时出错");
-    } finally {
-      setIsSubmitting(false);
-    }
+  // 导出img和pdf
+  const exportOrderFile = async () => {
+    await downloadAsImage();
+    await downloadAsPDF();
   };
 
   const downloadAsImage = async () => {
-    setIsExporting(true);
+    // setIsExporting(true);
     try {
       const imageData = await exportAsImage();
       if (imageData) {
         const link = document.createElement("a");
         link.href = imageData;
-        link.download = "order-content.png";
+        const timeStr = dayjs().format("YYYY-MM-DD HH:mm:ss");
+        link.download = `${suppliersData?.name}-${timeStr}.png`;
+
         link.click();
       }
     } finally {
@@ -215,13 +211,14 @@ export default ({ supplierForm, orderForm }) => {
   };
 
   const downloadAsPDF = async () => {
-    setIsExporting(true);
+    // setIsExporting(true);
     try {
       const pdfData = await exportAsPDF();
       if (pdfData) {
         const link = document.createElement("a");
         link.href = pdfData;
-        link.download = "order-content.pdf";
+        const timeStr = dayjs().format("YYYY-MM-DD HH:mm:ss");
+        link.download = `${suppliersData?.name}-${timeStr}.pdf`;
         link.click();
       }
     } finally {
@@ -272,18 +269,6 @@ export default ({ supplierForm, orderForm }) => {
                       src="https://sjc.microlink.io/aqwGUNvYhwYFuchX_7s7E8lKE0-diEdDUnm2w7ni5wKYfMRpH7PBOFBewSsYEUCHShMedbEZWtZu-mNnrbT4lQ.jpeg"
                       crossOrigin="anonymous"
                     />
-                    {/* <Image.PreviewGroup>
-                      {item.images.map((item) => (
-                        <Image
-                          key={item.picturebedId}
-                          style={{
-                            objectFit: "cover",
-                            height: "150px",
-                          }}
-                          src={item.url}
-                        />
-                      ))}
-                    </Image.PreviewGroup> */}
                     <span
                       className="product-card-title"
                       style={{ margin: "6px 0" }}
@@ -304,4 +289,4 @@ export default ({ supplierForm, orderForm }) => {
       </div>
     </div>
   );
-};
+});

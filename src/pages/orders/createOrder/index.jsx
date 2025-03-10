@@ -14,8 +14,6 @@ import {
   message,
   Drawer,
   Space,
-  DatePicker,
-  Radio,
   Card,
   Row,
   Col,
@@ -32,6 +30,8 @@ const CreateOrder = forwardRef((props, ref) => {
   const [createOrderDrawer, openCreateOrderDrawer] = useState(false);
   const selectSupplierFormRef = useRef();
   const selectOrderFormRef = useRef(null);
+  const exportOrderFormRef = useRef(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
@@ -62,11 +62,12 @@ const CreateOrder = forwardRef((props, ref) => {
     }
 
     if (currentStep === 2) {
+      setIsSubmitting(true);
       submitOrder();
     }
   };
 
-  const submitOrder = () => {
+  const submitOrder = async () => {
     const supplierId = selectSupplierFormRef.current.getFieldValue().supplier;
 
     const orderList = selectOrderFormRef.current.getValues().map((item) => ({
@@ -75,11 +76,29 @@ const CreateOrder = forwardRef((props, ref) => {
       count: item.count,
     }));
 
+    const { exportOrderFile } = exportOrderFormRef.current;
+    // console.log(exportAsImage, exportAsPDF, 999);
     const submitData = {
       supplierId,
       orderList,
     };
     console.log(submitData, "submitData");
+
+    try {
+      // downloadAsPDF
+      // Export as image
+      await exportOrderFile();
+
+      // Mock API call to submit data
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      alert("订单已提交成功，并已导出内容！");
+    } catch (error) {
+      console.error("Error during submission:", error);
+      alert("提交订单时出错");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const preStep = () => {
@@ -124,15 +143,11 @@ const CreateOrder = forwardRef((props, ref) => {
         <SelectOrder ref={selectOrderFormRef} data={mockList} />
       </div>
       <div style={{ display: currentStep === 2 ? "block" : "none" }}>
-        {/* <ShowSelectOrder
-          supplierForm={selectSupplierFormRef}
-          orderForm={selectOrderFormRef}
-        /> */}
         <ExportForm
+          ref={exportOrderFormRef}
           supplierForm={selectSupplierFormRef}
           orderForm={selectOrderFormRef}
         />
-        {/* <Test /> */}
       </div>
     </Drawer>
   );
@@ -238,67 +253,5 @@ const SelectOrder = React.forwardRef(({ data }, ref) => {
     </div>
   );
 });
-
-//确认核对订单
-const ShowSelectOrder = ({ supplierForm, orderForm }) => {
-  const { supplier: supplierId } = supplierForm.current
-    ? supplierForm?.current?.getFieldValue()
-    : "";
-  const orderList = orderForm.current ? orderForm.current.getValues() : [];
-  const { suppliers } = usePreloadData();
-
-  const suppliersData = suppliers?.find((a) => a.id === supplierId);
-  return (
-    <div>
-      <div>
-        <h3>供应商：</h3>
-        <div className="supplier-content">
-          <span>姓名：{suppliersData?.name}</span>
-          <span>电话：{suppliersData?.phone}</span>
-          <span>邮箱：{suppliersData?.email}</span>
-        </div>
-      </div>
-      <div>
-        <h3>选中货品</h3>
-
-        <Row gutter={16}>
-          {orderList.map((item, index) => (
-            <Col
-              span={4}
-              key={index}
-              style={{ marginBottom: 16, paddingBottom: 16 }}
-            >
-              <div className="product-card">
-                <Image.PreviewGroup>
-                  {item.images.map((item) => (
-                    <Image
-                      key={item.picturebedId}
-                      style={{
-                        objectFit: "cover",
-                        height: "150px",
-                      }}
-                      src={item.url}
-                    />
-                  ))}
-                </Image.PreviewGroup>
-                <span
-                  className="product-card-title"
-                  style={{ margin: "6px 0" }}
-                >{`${item.nameCN}(${item.sku})`}</span>
-                <span
-                  className="product-card-desc"
-                  style={{ marginBottom: 12 }}
-                >
-                  订购数量:
-                  <span className="product-card-count">{item.count}</span>
-                </span>
-              </div>
-            </Col>
-          ))}
-        </Row>
-      </div>
-    </div>
-  );
-};
 
 export default CreateOrder;
