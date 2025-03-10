@@ -269,7 +269,7 @@ export default ({ supplierForm, orderForm }) => {
                         height: "150px",
                       }}
                       // src={item.images[0].url}
-                      src="https://sjc.microlink.io/aqwGUNvYhwYFuchX_7s7E8lKE0-diEdDUnm2w7ni5wKYfMRpH7PBOFBewSsYEUCHShMedbEZWtZu-mNnrbT4lQ.jpeg"
+                      src="https://pic1.imgdb.cn/item/67cc528a066befcec6e16373.webp"
                       crossOrigin="anonymous"
                     />
                     {/* <Image.PreviewGroup>
