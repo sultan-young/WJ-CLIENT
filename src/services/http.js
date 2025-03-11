@@ -19,17 +19,17 @@ http.interceptors.request.use((config) => {
 // 响应拦截器（统一错误处理）
 http.interceptors.response.use(
   (response) => {
-    const { data, success, message: errorMessage } = response.data;
+    const { data, success, message: errorMsg } = response.data;
     if (!success) {
-        message.error(errorMessage || '未知错误');
+        message.error(errorMsg || '未知错误');
 
-        return Promise.reject(errorMessage)
+        return Promise.reject(errorMsg)
     }
     return data || []
   },
   (error) => {
     const errorMessage =
-      error.response?.data?.message || "请求失败，请稍后重试";
+      error.response?.message || "请求失败，请稍后重试";
     message.error(errorMessage);
     return Promise.reject(error);
   }

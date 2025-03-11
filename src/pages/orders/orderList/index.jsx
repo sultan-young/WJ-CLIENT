@@ -1,54 +1,71 @@
-import React, { useMemo, useRef, useState } from "react";
-import { Table, Button, message, Space, Input, DatePicker } from "antd";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Table,
+  Button,
+  message,
+  Space,
+  Input,
+  DatePicker,
+  Popconfirm,
+} from "antd";
 import dayjs from "dayjs";
 import { SearchOutlined } from "@ant-design/icons";
 import "./index.css";
 import ProductCardForSelectOrder from "../../../components/Card/ProductCardForSelectOrder";
 import CreateOrder from "../createOrder";
 import { usePreloadData } from "../../../context/AppContext";
-import { tableList } from "./util";
+import {
+  deleteSupplierOrder,
+  fitchSupplierOrder,
+} from "../../../services/supplierOrder";
 
 const OrderManagement = () => {
   const createOrderRef = useRef();
   const { suppliers } = usePreloadData();
-
-  // const [data, setData] = useState<Or>(initialData);
   const [searchOrderNumber, setSearchOrderNumber] = useState("");
   const [searchCreationTime, setSearchCreationTime] = useState(null);
+  const [orders, setOrders] = useState([]);
 
   const supplierOptions = useMemo(() => {
     return suppliers.map((item) => ({ label: item.name, value: item.id }));
   }, [suppliers]);
 
-  const [orders, setOrders] = useState(tableList);
+  useEffect(() => {
+    fetchPageData();
+  }, []);
+
+  const fetchPageData = async () => {
+    const result = await fitchSupplierOrder();
+    console.log(result);
+    setOrders(result);
+  };
 
   const columns = [
     {
-      title: "订单号",
-      dataIndex: "orderNo",
-      render: (text) => text || "--",
+      title: "订单编号",
+      dataIndex: "id",
     },
     {
       title: "供应商",
       dataIndex: "supplier",
-      render: (item) => supplierOptions.find((o) => o.value === item)?.label,
+      render: (item) => item.name,
     },
-    {
-      title: "商品",
-      dataIndex: "products",
-      render: (products) => (
-        <div>
-          {products.map((a) => (
-            <div key={a.id}>
-              {a.name}-{a.sku} (x{a.quantity})
-            </div>
-          ))}
-        </div>
-      ),
-    },
+    // {
+    //   title: "商品",
+    //   dataIndex: "products",
+    //   render: (products) => (
+    //     <div>
+    //       {products.map((a) => (
+    //         <div key={a.id}>
+    //           {a.name}-{a.sku} (x{a.quantity})
+    //         </div>
+    //       ))}
+    //     </div>
+    //   ),
+    // },
     {
       title: "发货时间",
-      dataIndex: "expectedDelivery",
+      dataIndex: "shippingDate",
       render: (date) => dayjs(date).format("YYYY-MM-DD"),
       sorter: (a, b) =>
         dayjs(a.expectedDelivery).unix() - dayjs(b.expectedDelivery).unix(),
@@ -56,32 +73,87 @@ const OrderManagement = () => {
     {
       title: "状态",
       dataIndex: "status",
-      render: (status, record) => (
-        <span
-          style={{
-            color:
-              status === "pending" && dayjs().isAfter(record.expectedDelivery)
-                ? "red"
-                : "inherit",
-          }}
-        >
-          {status === "pending" ? "待发货" : "已完成"}
-        </span>
-      ),
+      render: (status, record) => {
+        const orderMap = {
+          1: "制作中",
+          2: "已发货",
+          3: "已完成",
+          4: "已删除",
+        };
+
+        return (
+          <span
+            style={{
+              color:
+                status === "pending" && dayjs().isAfter(record.expectedDelivery)
+                  ? "red"
+                  : "inherit",
+            }}
+          >
+            {orderMap[status]}
+          </span>
+        );
+      },
     },
     {
       title: "操作",
       dataIndex: "action",
-      render: (status, record) => (
-        <Space size="middle">
-          <a>查看</a>
-          <a>编辑</a>
-          <a>导出</a>
-          <a>删除</a>
+      render: (_, record) => (
+        <Space size="small">
+          <Button
+            onClick={() => previewOrder(record)}
+            className="order-btn"
+            type="link"
+            size="small"
+          >
+            查看
+          </Button>
+          <Button
+            onClick={() => updateOrder(record)}
+            className="order-btn"
+            type="link"
+            size="small"
+          >
+            编辑
+          </Button>
+          <Button
+            onClick={() => exportOrder(record)}
+            className="order-btn"
+            type="link"
+            size="small"
+          >
+            导出
+          </Button>
+          <Popconfirm
+            title="确认删除订单吗？删除后将无法恢复"
+            onConfirm={() => deleteOrder(record)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button className="order-btn" type="link" size="small" danger>
+              删除
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
   ];
+
+  const previewOrder = async (record) => {
+    console.log(record, "status");
+  };
+
+  const updateOrder = async () => {
+    
+  };
+
+  const exportOrder = async () => {};
+
+  const deleteOrder = async ({ id }) => {
+    await deleteSupplierOrder({ id });
+    message.success("删除成功");
+    fetchPageData();
+  };
 
   const handleCreateOrder = () => {
     createOrderRef.current.open();

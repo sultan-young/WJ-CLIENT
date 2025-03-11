@@ -42,7 +42,8 @@ const CreateOrder = forwardRef((props, ref) => {
   }, [createOrderDrawer]);
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
-    open: async () => {
+    // 1 新增模式 2为编辑模式
+    open: async (mode = 1) => {
       openCreateOrderDrawer(true);
     },
   }));
