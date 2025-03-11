@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Button } from "antd";
 import ShippingTable from "./ShippingTable";
 import { Upload } from "lucide-react";
-import { processJsonData, exportToExcel } from "../util";
+import { processJsonData } from "../utils/upload";
+import { exportToExcel } from "../utils/export";
 
 export function DataProcessor() {
   const [data, setData] = useState([]);
@@ -55,6 +56,8 @@ export function DataProcessor() {
               >
                 <label
                   style={{
+                    width: "100%",
+                    height: "100%",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -98,8 +101,6 @@ export function DataProcessor() {
                 color: "#6b7280",
               }}
             >
-              {" "}
-              {/* text-center py-12 text-muted-foreground */}
               {isLoading ? "正在处理数据..." : "上传JSON文件以查看数据"}
             </div>
           )}

@@ -26,7 +26,7 @@ const ShippingTable = ({ dataSource = [] }) => {
         // className={styles.customTable}
         columns={columns}
         dataSource={dataSource}
-        scroll={{ x: "max-content" }}
+        scroll={{ x: "max-content", y: "calc(100vh - 270px)" }}
         pagination={false}
         rowKey="buyer_id"
       />
