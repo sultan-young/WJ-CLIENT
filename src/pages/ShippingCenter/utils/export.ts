@@ -115,8 +115,29 @@ export function exportToExcel(data: ProcessedOrder[]) {
     }),
   ];
 
-  // Create a worksheet
+  // 创建表格
   const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+  // 优化设置列宽
+  const range = XLSX.utils.decode_range(worksheet["!ref"]!);
+  for (let col = range.s.c; col <= range.e.c; col++) {
+    // Set column width (optional,可以根据需要调整宽度)
+    const colWidth = 20; // 设置列宽为 20 字符
+    worksheet["!cols"] = worksheet["!cols"] || [];
+    worksheet["!cols"][col] = { wch: colWidth };
+
+    // Set wrap text for all cells in this column
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+      const cell = worksheet[cellAddress];
+      if (!cell) continue;
+
+      // Ensure cell has a style object
+      cell.s = cell.s || {};
+      cell.s.alignment = cell.s.alignment || {};
+      cell.s.alignment.wrapText = true; // Enable wrap text
+    }
+  }
 
   // Create a workbook
   const workbook = XLSX.utils.book_new();

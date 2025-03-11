@@ -56,6 +56,8 @@ export function DataProcessor() {
               >
                 <label
                   style={{
+                    width: "100%",
+                    height: "100%",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -99,8 +101,6 @@ export function DataProcessor() {
                 color: "#6b7280",
               }}
             >
-              {" "}
-              {/* text-center py-12 text-muted-foreground */}
               {isLoading ? "正在处理数据..." : "上传JSON文件以查看数据"}
             </div>
           )}
