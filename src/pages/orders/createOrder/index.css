@@ -1,5 +1,5 @@
 .product-image-card {
-    min-height: 300px;
+  min-height: 300px;
 }
 .product-image-card .ant-badge {
   display: block;
@@ -27,13 +27,18 @@
   width: 120px;
 }
 .product-card-desc {
-  margin-top: 4px;
+  margin-top: 6px;
   color: #666666;
   font-size: 12px;
 }
 
 .product-card-count {
   color: red;
+  font-weight: 600;
+}
+
+.product-card-price {
+  color: #fb914d;
   font-weight: 600;
 }
 
@@ -49,138 +54,135 @@
 }
 
 .order-preview-card {
-    border: 1px solid #000;
-    padding: 20px;
+  border: 1px solid #000;
+  padding: 20px;
 }
 
-
-
-
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 30px;
-  }
-  
-  .style-title {
-    text-align: center;
-    margin-bottom: 10px;
-    font-size: 16px;
-    color: #666;
-  }
-  
-  /* 通用卡片结构 */
-  .order-card {
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-  }
-  
-  .order-card-inner {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .order-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-  
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+}
+
+.style-title {
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 通用卡片结构 */
+.order-card {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.order-card-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.order-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+}
+
+.order-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (max-width: 640px) {
   .order-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 24px;
+    grid-template-columns: 1fr;
   }
-  
-  .order-column {
-    display: flex;
+
+  .order-header {
     flex-direction: column;
-    gap: 20px;
+    align-items: flex-start;
+    gap: 8px;
   }
-  
-  .order-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  @media (max-width: 640px) {
-    .order-content {
-      grid-template-columns: 1fr;
-    }
-    
-    .order-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
-  }
-  
-  /* 风格 1: 极简主义 */
-  .style-1 .order-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .style-1 .order-card-inner {
-    padding: 24px;
-  }
-  
-  .style-1 .order-title {
-    font-size: 18px;
-    font-weight: 500;
-    color: #333;
-  }
-  
-  .style-1 .order-number {
-    font-size: 14px;
-    color: #888;
-  }
-  
-  .style-1 .order-item-label {
-    font-size: 13px;
-    color: #888;
-  }
-  
-  .style-1 .order-item-value {
-    font-size: 15px;
-    color: #333;
-  }
-  
-  .style-1 .order-item.important .order-item-label {
-    color: #333;
-    font-weight: 500;
-  }
-  
-  .style-1 .order-item.important .order-item-value {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-  }
-  
-  .style-1 .order-notes {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-  }
-  
-  .style-1 .order-notes-content {
-    margin-top: 8px;
-    font-size: 14px;
-    color: #555;
-    line-height: 1.5;
-  }
-  
-  .style-1 .company-watermark {
-    position: absolute;
-    bottom: 16px;
-    right: 20px;
-    font-size: 14px;
-    color: rgba(0, 0, 0, 0.06);
-    font-weight: 500;
-  }
+}
+
+/* 风格 1: 极简主义 */
+.style-1 .order-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.style-1 .order-card-inner {
+  padding: 24px;
+}
+
+.style-1 .order-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+}
+
+.style-1 .order-number {
+  font-size: 14px;
+  color: #888;
+}
+
+.style-1 .order-item-label {
+  font-size: 13px;
+  color: #888;
+}
+
+.style-1 .order-item-value {
+  font-size: 15px;
+  color: #333;
+}
+
+.style-1 .order-item.important .order-item-label {
+  color: #333;
+  font-weight: 500;
+}
+
+.style-1 .order-item.important .order-item-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.style-1 .order-notes {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.style-1 .order-notes-content {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.style-1 .company-watermark {
+  position: absolute;
+  bottom: 16px;
+  right: 20px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.06);
+  font-weight: 500;
+}
