@@ -21,14 +21,9 @@ import {
 
 const OrderManagement = () => {
   const createOrderRef = useRef();
-  const { suppliers } = usePreloadData();
   const [searchOrderNumber, setSearchOrderNumber] = useState("");
   const [searchCreationTime, setSearchCreationTime] = useState(null);
   const [orders, setOrders] = useState([]);
-
-  const supplierOptions = useMemo(() => {
-    return suppliers.map((item) => ({ label: item.name, value: item.id }));
-  }, [suppliers]);
 
   useEffect(() => {
     fetchPageData();
@@ -140,11 +135,11 @@ const OrderManagement = () => {
   ];
 
   const previewOrder = async (record) => {
-    console.log(record, "status");
+    handleCreateOrder(3, record)
   };
 
-  const updateOrder = async () => {
-    
+  const updateOrder = async (record) => {
+    handleCreateOrder(2, record)
   };
 
   const exportOrder = async () => {};
@@ -155,8 +150,8 @@ const OrderManagement = () => {
     fetchPageData();
   };
 
-  const handleCreateOrder = () => {
-    createOrderRef.current.open();
+  const handleCreateOrder = (mode = 1, data) => {
+    createOrderRef.current.open(mode, data);
   };
 
   const handleSearch = () => {
@@ -209,13 +204,13 @@ const OrderManagement = () => {
       </div>
       <Button
         type="primary"
-        onClick={handleCreateOrder}
+        onClick={() => handleCreateOrder(1)}
         style={{ marginBottom: 16 }}
       >
         新建订单
       </Button>
 
-      <CreateOrder ref={createOrderRef} />
+      <CreateOrder ref={createOrderRef} afterFinishAction={fetchPageData} />
 
       <Table
         columns={columns}

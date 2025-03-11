@@ -312,12 +312,12 @@ const ExportOrder = forwardRef(
                         >
                           <div className="product-card">
                             <img
-                              key={item.images[0].picturebedId}
+                              key={item.images[0]?.picturebedId}
                               style={{
                                 objectFit: "cover",
                                 height: "150px",
                               }}
-                              src={item.images[0].url}
+                              src={item.images[0]?.url}
                             />
                             <span
                               className="product-card-title"

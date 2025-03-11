@@ -22,7 +22,6 @@ http.interceptors.response.use(
     const { data, success, message: errorMsg } = response.data;
     if (!success) {
         message.error(errorMsg || '未知错误');
-
         return Promise.reject(errorMsg)
     }
     return data || []

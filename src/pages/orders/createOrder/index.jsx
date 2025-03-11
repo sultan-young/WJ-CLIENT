@@ -11,40 +11,63 @@ import "./index.css";
 import ExportForm from "./exportOrder";
 import Step1WithSupplier from "./Step1WithSupplier";
 import Step2WithOrder from "./Step2WithOrder";
-import { createSupplierOrder } from "../../../services/supplierOrder";
+import { createSupplierOrder, updateSupplierOrder } from "../../../services/supplierOrder";
 
-const CreateOrder = forwardRef((props, ref) => {
-  const [createOrderDrawer, openCreateOrderDrawer] = useState(false);
-  const selectSupplierFormRef = useRef();
+const PAGE_MODE = {
+  CREATE: 1,
+  EDIT: 2,
+  PREVIEW: 3,
+};
+
+const CreateOrder = forwardRef(({afterFinishAction}, ref) => {
+  const [createOrderDrawerVisible, setCreateOrderDrawerVisible] =
+    useState(false);
   const [supplierId, setSupplierId] = useState("");
   const [shippingDate, setShippingDate] = useState("");
+  const selectSupplierFormRef = useRef(null);
   const selectOrderFormRef = useRef(null);
   const exportOrderFormRef = useRef(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { suppliers } = usePreloadData();
   // 当前步骤 0=> 选中供应商, 1=>选中商品和数量下订单, 2=>选择预发货时间，选择是否需要在完成订单时候强制上传图片和订单号
   const [currentStep, setCurrentStep] = useState(0);
+
+  // 页面模式
+  const [pageMode, setPageMode] = useState(PAGE_MODE.EDIT);
+  const [pageInitialData, setPageInitialData] = useState(null);
+
+  useEffect(() => {
+    if (pageMode === PAGE_MODE.EDIT) {
+      selectSupplierFormRef.current?.setFieldValue('supplier', pageInitialData?.supplierId)
+    }
+
+    if (pageMode === PAGE_MODE.PREVIEW) {
+      selectSupplierFormRef.current?.setFieldValue('supplier', pageInitialData?.supplierId)
+    }
+  }, [pageMode, createOrderDrawerVisible, pageInitialData?.supplierId]);
 
   const resetState = () => {
     setCurrentStep(0);
     setSupplierId("");
     setShippingDate("");
-    setIsSubmitting(false);
+    setPageInitialData(null)
+    setPageMode(PAGE_MODE.CREATE)
     selectSupplierFormRef.current &&
       selectSupplierFormRef.current.resetFields();
     selectOrderFormRef.current?.formData &&
       selectOrderFormRef.current.formData.resetFields();
   };
   useEffect(() => {
-    if (!createOrderDrawer) {
+    if (!createOrderDrawerVisible) {
       resetState();
     }
-  }, [createOrderDrawer]);
+  }, [createOrderDrawerVisible]);
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
     // 1 新增模式 2为编辑模式
-    open: async (mode = 1) => {
-      openCreateOrderDrawer(true);
+    open: async (mode = 1, data) => {
+      setCreateOrderDrawerVisible(true);
+      setPageInitialData(data)
+      setPageMode(mode);
     },
   }));
 
@@ -64,6 +87,7 @@ const CreateOrder = forwardRef((props, ref) => {
       setShippingDate(
         selectOrderFormRef.current.formData.getFieldValue().shippingDate
       );
+      
       // 未选中
       if (!selectOrderFormRef.current.verifySelectStatus()) {
         message.error("至少选中一个产品");
@@ -76,8 +100,8 @@ const CreateOrder = forwardRef((props, ref) => {
     }
 
     if (currentStep === 2) {
-      setIsSubmitting(true);
-      submitOrder();
+      await submitOrder();
+      afterFinishAction()
     }
   };
 
@@ -93,16 +117,25 @@ const CreateOrder = forwardRef((props, ref) => {
       orderList,
       shippingDate,
     };
-    console.log(submitData, orderList, "submitData");
-    await createSupplierOrder(submitData)
-    message.success('创建成功')
+    if (pageMode === PAGE_MODE.CREATE) {
+      await createSupplierOrder(submitData);
+      message.success("创建成功");
+    } 
+    if (pageMode === PAGE_MODE.EDIT) {
+      await updateSupplierOrder({
+        ...submitData,
+        id: pageInitialData.id,
+      })
+      message.success("编辑成功");
+    }
+    setCreateOrderDrawerVisible(false)
   };
 
   return (
     <Drawer
       title="新建订单"
-      open={createOrderDrawer}
-      onClose={() => openCreateOrderDrawer(false)}
+      open={createOrderDrawerVisible}
+      onClose={() => setCreateOrderDrawerVisible(false)}
       footer={null}
       width={1200}
       destroyOnClose
@@ -134,7 +167,7 @@ const CreateOrder = forwardRef((props, ref) => {
       </div>
 
       <div style={{ display: currentStep === 1 ? "block" : "none" }}>
-        <Step2WithOrder ref={selectOrderFormRef} supplierId={supplierId} />
+        <Step2WithOrder ref={selectOrderFormRef} defaultSelectOrder={pageInitialData?.orderList} defaultSelectShipDate={pageInitialData?.shippingDate} supplierId={supplierId} />
       </div>
       <div style={{ display: currentStep === 2 ? "block" : "none" }}>
         <ExportForm

@@ -53,9 +53,7 @@ export const updateProduct = async (productData) => {
 // 查询
 export const searchProduct = async (productData) => {
   const result = await http.post('/products/search', productData)
-  return {
-    result
-  };
+  return result;
 };
 
 // 代理导出图片
