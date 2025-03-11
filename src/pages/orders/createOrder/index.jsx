@@ -11,6 +11,7 @@ import "./index.css";
 import ExportForm from "./exportOrder";
 import Step1WithSupplier from "./Step1WithSupplier";
 import Step2WithOrder from "./Step2WithOrder";
+import { createSupplierOrder } from "../../../services/supplierOrder";
 
 const CreateOrder = forwardRef((props, ref) => {
   const [createOrderDrawer, openCreateOrderDrawer] = useState(false);
@@ -92,17 +93,8 @@ const CreateOrder = forwardRef((props, ref) => {
       shippingDate,
     };
     console.log(submitData, orderList, "submitData");
-
-    try {
-      // downloadAsPDF
-      // Export as image
-      // Mock API call to submit data
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error("Error during submission:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await createSupplierOrder(submitData)
+    message.success('创建成功')
   };
 
   return (
