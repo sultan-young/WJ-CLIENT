@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Button } from "antd";
 import ShippingTable from "./ShippingTable";
 import { Upload } from "lucide-react";
-import { processJsonData, exportToExcel } from "../util";
+import { processJsonData } from "../utils/upload";
+import { exportToExcel } from "../utils/export";
 
 export function DataProcessor() {
   const [data, setData] = useState([]);
