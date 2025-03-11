@@ -19,6 +19,7 @@ import Sider from "antd/es/layout/Sider";
 import { useAuth } from "./context/AuthContext";
 import Unauthorized from "./pages/Unauthorized";
 import OrderList from "./pages/orders/orderList";
+import ShippingCenter from "./pages/ShippingCenter";
 import { PreloadDataProvider } from "./context/AppContext";
 
 const { Content } = Layout;
@@ -61,6 +62,17 @@ const AppSider = () => {
         {
           key: "orderList",
           label: "订单管理",
+        },
+      ],
+    },
+    {
+      key: "shippingCenter",
+      icon: <HomeOutlined />,
+      label: "面单中心",
+      children: [
+        {
+          key: "shippingList",
+          label: "面单中心",
         },
       ],
     },
@@ -142,6 +154,7 @@ function App() {
             <Route path="productPool" element={<ProductList />} />
             <Route path="add-product" element={<ProductForm />} />
             <Route path="orderList" element={<OrderList />} />
+            <Route path="shippingList" element={<ShippingCenter />} />
           </Route>
         </Routes>
       </Router>
