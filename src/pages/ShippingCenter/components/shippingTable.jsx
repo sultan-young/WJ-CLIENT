@@ -5,11 +5,13 @@ const ShippingTable = ({ dataSource = [] }) => {
     {
       title: "序号",
       dataIndex: "index",
+      fixed: "left",
+      width: 66,
       render: (text, record, index) => index + 1,
     },
-    { title: "订单id", dataIndex: "buyer_id" },
-    { title: "姓名", dataIndex: "name" },
-    { title: "邮箱 2", dataIndex: "email", key: "email" },
+    { title: "订单id", dataIndex: "buyer_id", fixed: "left" },
+    { title: "姓名", dataIndex: "name", fixed: "left" },
+    { title: "邮箱", dataIndex: "email", key: "email" },
     { title: "国家", dataIndex: "country", key: "country" },
     { title: "州", dataIndex: "state", key: "state" },
     { title: "城市", dataIndex: "city", key: "city" },
@@ -29,6 +31,7 @@ const ShippingTable = ({ dataSource = [] }) => {
       title: "数量",
       dataIndex: "quantity",
       key: "quantity",
+      width: 66,
       render: (text, record) =>
         record.products.map((product, idx) => (
           <div key={idx}>{product.quantity}</div>

@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
-import { Button } from "antd";
+import { Button, message } from "antd";
 import ShippingTable from "./ShippingTable";
 import { Upload } from "lucide-react";
 import { processJsonData } from "../utils/upload";
 import { exportToExcel } from "../utils/export";
+import JsonInputDrawer from "./JsonInputDrawer";
 
 export function DataProcessor() {
   const [data, setData] = useState([]);
@@ -22,7 +23,22 @@ export function DataProcessor() {
       setData(processedData);
     } catch (error) {
       console.error("Error processing file:", error);
-      alert("处理文件时出错，请检查文件格式是否正确");
+      message.error("处理文件时出错，请检查文件格式是否正确");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleJsonSubmit = (jsonText, onSuccess) => {
+    setIsLoading(true);
+    try {
+      const jsonData = JSON.parse(jsonText);
+      const processedData = processJsonData(jsonData);
+      setData(processedData);
+      onSuccess();
+    } catch (error) {
+      console.error("Error processing JSON:", error);
+      message.error("处理JSON数据时出错，请检查格式是否正确");
     } finally {
       setIsLoading(false);
     }
@@ -30,7 +46,7 @@ export function DataProcessor() {
 
   const handleExport = () => {
     if (data.length === 0) {
-      alert("没有数据可导出");
+      message.error("没有数据可导出");
       return;
     }
     exportToExcel(data);
@@ -76,6 +92,16 @@ export function DataProcessor() {
                   />
                 </label>
               </Button>
+              {/* <Button
+                onClick={() => {
+                  setOpen(true);
+                }}
+                disabled={isLoading}
+                style={{ width: "100%", maxWidth: "auto" }} // w-full sm:w-auto
+              >
+                输入json数据
+              </Button> */}
+              <JsonInputDrawer onSubmit={handleJsonSubmit} />
               <Button
                 onClick={handleExport}
                 disabled={data.length === 0 || isLoading}
