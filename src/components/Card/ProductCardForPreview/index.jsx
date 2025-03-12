@@ -15,6 +15,13 @@ import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
 import { useMemo, useState } from "react";
 import { updateProduct } from "../../../services/productService";
 
+// 使用 props 动态设置样式
+const DealCard = styled(Card)(({ single }) => ({
+  ".ant-card-cover": {
+    ...(single ? { maxHeight: "500px !important", height: "500px" } : {}),
+  },
+}));
+
 const ProductCardForPreview = ({
   product,
   onDelete,
@@ -31,7 +38,6 @@ const ProductCardForPreview = ({
     return (product?.images || []).map((item) => item.url);
   }, [product]);
 
-  console.log(isSingleShow, 111);
   const tagsDom = (
     <>
       {product.tags.map((tag) => (
@@ -42,15 +48,11 @@ const ProductCardForPreview = ({
     </>
   );
 
-  const DealCard = styled(Card)({
-    ".ant-card-cover": {
-      ...(isSingleShow ? { maxHeight: "500px !important",height:'500px' } : {}),
-    },
-  });
   return (
     <DealCard
       // title={product.nameCN}
       variant="borderless"
+      single={isSingleShow || undefined}
       cover={
         <Image.PreviewGroup
           width={200}

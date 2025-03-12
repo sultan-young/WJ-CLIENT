@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button, message } from "antd";
 import ShippingTable from "./ShippingTable";
 import { Upload } from "lucide-react";
@@ -10,6 +10,7 @@ import JsonInputDrawer from "./JsonInputDrawer";
 export function DataProcessor() {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const tableRef = useRef(null);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files?.[0];
@@ -45,10 +46,12 @@ export function DataProcessor() {
   };
 
   const handleExport = () => {
+    const data = tableRef.current.exportData || [];
     if (data.length === 0) {
       message.error("没有数据可导出");
       return;
     }
+    // console.log(tableRef.current);
     exportToExcel(data);
   };
 
@@ -117,7 +120,7 @@ export function DataProcessor() {
             )}
           </div>
           {data.length > 0 ? (
-            <ShippingTable dataSource={data} />
+            <ShippingTable dataSource={data} ref={tableRef} />
           ) : (
             <div
               style={{

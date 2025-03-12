@@ -354,7 +354,9 @@ const ExportOrder = forwardRef(
                         }}
                       >
                         本次应支付：{priceList?.join("+")}=
-                        <span style={{ color: "#fb914d" }}>{totalPrice}</span>
+                        <span style={{ color: "#fb914d", fontSize: "18px" }}>
+                          {totalPrice}
+                        </span>
                       </div>
                     )}
                   </div>
