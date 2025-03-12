@@ -27,17 +27,19 @@ const calculateProductProfitRMB = ({
   salePriceUSD, // 平台销售金额
   costPriceRMB, // 商品成本
   shippingFeeRMB, // 运费
+  saleShipPriceUSD, // 平台商品收取的运费
   packagingFeeRMB = 0, // 包装费
 }) => {
+    const saleTotalPrice = salePriceUSD + saleShipPriceUSD;
   const feeTotalUSD =
     ListingFeeUSD +
-    getTransactionCommissionFee(salePriceUSD) +
-    getPayProcessingFee(salePriceUSD) +
-    getSupervisionFee(salePriceUSD);
+    getTransactionCommissionFee(saleTotalPrice) +
+    getPayProcessingFee(saleTotalPrice) +
+    getSupervisionFee(saleTotalPrice);
   // 销售获得的金额 - 平台所有抽成 - 商品成本 - 商品运费 - 包装费
 
   return (
-    salePriceUSD * USDTORMB -
+    saleTotalPrice * USDTORMB -
     feeTotalUSD * USDTORMB -
     costPriceRMB -
     shippingFeeRMB -
@@ -50,16 +52,18 @@ const calculateGrossProfit = ({
   costPriceRMB, // 商品成本
   salePriceUSD, // 平台销售金额
   shippingFeeRMB, // 运费
+  saleShipPriceUSD, // 平台商品收取的运费
   packagingFeeRMB = 0, // 包装费
 }) => {
   // (销售收入 - 销售成本) / 销售收入
   const incomeRMB = calculateProductProfitRMB({
     costPriceRMB, // 商品成本
-    salePriceUSD, // 平台销售金额
-    shippingFeeRMB, // 运费
-    packagingFeeRMB, // 包装费
+  salePriceUSD, // 平台销售金额
+  shippingFeeRMB, // 运费
+  saleShipPriceUSD, // 平台商品收取的运费
+  packagingFeeRMB, // 包装费
   });
-  return incomeRMB / (salePriceUSD * USDTORMB) * 100;
+  return incomeRMB / ((salePriceUSD + saleShipPriceUSD) * USDTORMB) * 100;
 };
 
 // 计算净利率

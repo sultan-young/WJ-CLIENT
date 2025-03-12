@@ -37,27 +37,46 @@ import {
 } from "../../utils/calculateProfit";
 
 const renderDiscountPanelItems = (price = 0) => {
-  let _price = (Number(price) || 0).toFixed(2)
+  let _price = (Number(price) || 0).toFixed(2);
   return [
     {
       key: "1",
-      label: <div className="discount-item"><span>9折预估利润</span> <span>${_price * 0.9}</span></div>,
+      label: (
+        <div className="discount-item">
+          <span>9折预估利润</span> <span>${_price * 0.9}</span>
+        </div>
+      ),
       children: (
         <div className="discount">
           <div className="discount-item">
-            <span>8折预估利润 </span> <span>{_price * 0.8}￥({rmb2usd(_price * 0.8)}$)</span>
+            <span>8折预估利润 </span>{" "}
+            <span>
+              {_price * 0.8}￥({rmb2usd(_price * 0.8)}$)
+            </span>
           </div>
           <div className="discount-item">
-            <span>7折预估利润</span>  <span>{_price * 0.7}￥ ({rmb2usd(_price * 0.7)}$)</span>
+            <span>7折预估利润</span>{" "}
+            <span>
+              {_price * 0.7}￥ ({rmb2usd(_price * 0.7)}$)
+            </span>
           </div>
           <div className="discount-item">
-            <span>6折预估利润</span>  <span>{_price * 0.6}￥ ({rmb2usd(_price * 0.6)}$)</span>
+            <span>6折预估利润</span>{" "}
+            <span>
+              {_price * 0.6}￥ ({rmb2usd(_price * 0.6)}$)
+            </span>
           </div>
           <div className="discount-item">
-            <span>5折预估利润</span>  <span>{_price * 0.5}￥ ({rmb2usd(_price * 0.5)}$)</span>
+            <span>5折预估利润</span>{" "}
+            <span>
+              {_price * 0.5}￥ ({rmb2usd(_price * 0.5)}$)
+            </span>
           </div>
           <div className="discount-item">
-            <span>4折预估利润</span>  <span>{_price * 0.4}￥ ({rmb2usd(_price * 0.4)}$)</span>
+            <span>4折预估利润</span>{" "}
+            <span>
+              {_price * 0.4}￥ ({rmb2usd(_price * 0.4)}$)
+            </span>
           </div>
         </div>
       ),
@@ -92,27 +111,30 @@ const ProductForm = forwardRef((props, ref) => {
   });
 
   const handleFormChange = () => {
-    autoCalculateProfit()
+    autoCalculateProfit();
   };
 
   const autoCalculateProfit = () => {
-    const { costPriceRMB, shippingFeeRMB, salePriceUSD } = form.getFieldValue();
+    const { costPriceRMB, shippingFeeRMB, salePriceUSD, saleShipPriceUSD } =
+      form.getFieldValue();
     if (costPriceRMB && shippingFeeRMB && salePriceUSD) {
       setProfitData({
         grossProfitMargin: calculateGrossProfit({
           costPriceRMB,
           shippingFeeRMB,
           salePriceUSD,
+          saleShipPriceUSD,
         }).toFixed(2),
         netProfitMargin: calculateNetProfit(),
         profit: calculateProductProfitRMB({
           costPriceRMB,
           shippingFeeRMB,
           salePriceUSD,
+          saleShipPriceUSD,
         }).toFixed(2),
       });
     }
-  }
+  };
 
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
@@ -150,7 +172,7 @@ const ProductForm = forwardRef((props, ref) => {
       );
       setFileList(images);
       setImageUrlList(images);
-      autoCalculateProfit()
+      autoCalculateProfit();
     }
   };
 
@@ -361,14 +383,6 @@ const ProductForm = forwardRef((props, ref) => {
               >
                 <InputNumber min={0} precision={2} />
               </Form.Item>
-              <Form.Item
-                label="平台商品运费($)"
-                name="saleShipPriceUSD"
-                tooltip="该数值用于自动计算商品的利润"
-                rules={[{ required: true, message: "请输入商品价格" }]}
-              >
-                <InputNumber min={0} precision={2} />
-              </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
@@ -381,21 +395,12 @@ const ProductForm = forwardRef((props, ref) => {
               </Form.Item>
 
               <Form.Item
-                label="申报价格($)"
-                name="declaredPrice"
-                tooltip="该数值会展示在制单的excel中，可能影响到物流理赔和部分国家的税"
+                label="平台商品运费($)"
+                name="saleShipPriceUSD"
+                tooltip="该数值用于自动计算商品的利润"
                 rules={[{ required: true, message: "请输入商品价格" }]}
               >
                 <InputNumber min={0} precision={2} />
-              </Form.Item>
-
-              <Form.Item
-                label="商品销售链接($)"
-                name="listingLink"
-                tooltip="制单时候需要"
-                rules={[{ required: true, message: "请输入商品价格" }]}
-              >
-                <Input />
               </Form.Item>
             </Col>
           </Row>
@@ -415,11 +420,23 @@ const ProductForm = forwardRef((props, ref) => {
               <span>预估利润</span>
               <span>{profitData.profit || "--"}￥</span>
             </div>
-            <Collapse size="small" items={renderDiscountPanelItems(profitData.profit)} />
+            <Collapse
+              size="small"
+              items={renderDiscountPanelItems(profitData.profit)}
+            />
           </div>
         </Col>
       </Row>
       {/* SKU 编号 */}
+
+      <Form.Item
+        label="商品销售链接"
+        name="listingLink"
+        tooltip="制单时候需要"
+        rules={[{ required: true, message: "请输入商品价格" }]}
+      >
+        <Input />
+      </Form.Item>
       <Space wrap>
         <Form.Item
           label="库存数量"
