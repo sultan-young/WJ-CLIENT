@@ -6,6 +6,7 @@ import { Upload } from "lucide-react";
 import { processJsonData } from "../utils/upload";
 import { exportToExcel } from "../utils/export";
 import JsonInputDrawer from "./JsonInputDrawer";
+import { makeYwOrder } from "../../../services/makeOrder";
 
 export function DataProcessor() {
   const [data, setData] = useState([]);
@@ -45,14 +46,15 @@ export function DataProcessor() {
     }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const data = tableRef.current.exportData || [];
+    const result = await makeYwOrder({orderList: data})
     if (data.length === 0) {
       message.error("没有数据可导出");
       return;
     }
     // console.log(tableRef.current);
-    exportToExcel(data);
+    exportToExcel(result);
   };
 
   return (
