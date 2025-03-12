@@ -26,6 +26,7 @@ const ProductList = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [suppliers, setSuppliers] = useState([]);
   const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
+  console.log(products, 1234);
 
   // 处理删除操作
   const handleDelete = async (productId) => {
@@ -107,9 +108,10 @@ const ProductList = () => {
     const res = await searchProduct({
       queryParams: data,
     });
-    setProducts(res.result);
+    setProducts(res);
   };
 
+  const isSingle = products?.length === 1;
   return (
     <div className="product-list-page">
       <Row
@@ -137,13 +139,13 @@ const ProductList = () => {
 
       <List
         grid={{
-          gutter: 6,
-          xs: 2,
-          sm: 2,
-          md: 4,
-          lg: 4,
-          xl: 6,
-          xxl: 8,
+          gutter: isSingle ? 1 : 6,
+          xs: isSingle ? 1 : 2,
+          sm: isSingle ? 1 : 2,
+          md: isSingle ? 1 : 4,
+          lg: isSingle ? 1 : 4,
+          xl: isSingle ? 1 : 6,
+          xxl: isSingle ? 1 : 8,
         }}
         dataSource={products}
         renderItem={(item) => (

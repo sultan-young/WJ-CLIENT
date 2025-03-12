@@ -19,6 +19,9 @@ import { updateProduct } from "../../../services/productService";
 const DealCard = styled(Card)(({ single }) => ({
   ".ant-card-cover": {
     ...(single ? { maxHeight: "500px !important", height: "500px" } : {}),
+    ".ant-image ": {
+      height: single ? "100%" : 200,
+    },
   },
 }));
 
