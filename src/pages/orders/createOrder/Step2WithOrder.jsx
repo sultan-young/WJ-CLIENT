@@ -40,7 +40,10 @@ const Step2WithOrder = forwardRef(
 
       // 将默认时间回填
       if (defaultSelectShipDate) {
-        ref.current.formData.setFieldValue('shippingDate', dayjs(defaultSelectShipDate))
+        ref.current.formData.setFieldValue(
+          "shippingDate",
+          dayjs(defaultSelectShipDate)
+        );
       }
 
       const fetchData = async () => {
@@ -116,13 +119,21 @@ const Step2WithOrder = forwardRef(
             name="shippingDate"
             rules={[{ required: true, message: "请选择发货日期" }]}
           >
-            <DatePicker/>
+            <DatePicker />
           </Form.Item>
         </Form>
         {productList.length ? (
-          <Row gutter={16}>
+          <Row gutter={[16, 16]}>
             {productList.map((item) => (
-              <Col span={4} key={item.id} style={{ marginBottom: 16 }}>
+              <Col
+                xs={12} // 手机宽度下每行显示 1 个
+                sm={12} // 小屏幕宽度下每行显示 2 个
+                md={6} // 中等屏幕宽度下每行显示 3 个
+                lg={4} // 大屏幕宽度下每行显示 4 个
+                xl={4} // 超大屏幕宽度下每行显示 6 个
+                key={item.id}
+                style={{ marginBottom: 16 }}
+              >
                 <Badge count={quantities[item.id]}>
                   <div className="product-card">
                     <Image.PreviewGroup>
