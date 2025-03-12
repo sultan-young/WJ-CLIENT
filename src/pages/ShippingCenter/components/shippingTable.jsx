@@ -2,6 +2,11 @@ import { Table } from "antd";
 
 const ShippingTable = ({ dataSource = [] }) => {
   const columns = [
+    {
+      title: "序号",
+      dataIndex: "index",
+      render: (text, record, index) => index + 1,
+    },
     { title: "订单id", dataIndex: "buyer_id" },
     { title: "姓名", dataIndex: "name" },
     { title: "邮箱 2", dataIndex: "email", key: "email" },
@@ -15,6 +20,19 @@ const ShippingTable = ({ dataSource = [] }) => {
       title: "SKU编号",
       dataIndex: "product_identifier",
       key: "product_identifier",
+      render: (text, record) =>
+        record.products.map((product, idx) => (
+          <div key={idx}>{product.product_identifier}</div>
+        )),
+    },
+    {
+      title: "数量",
+      dataIndex: "quantity",
+      key: "quantity",
+      render: (text, record) =>
+        record.products.map((product, idx) => (
+          <div key={idx}>{product.quantity}</div>
+        )),
     },
     { title: "产品标题", dataIndex: "title", key: "title" },
   ];

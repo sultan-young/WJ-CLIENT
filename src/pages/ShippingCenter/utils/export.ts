@@ -1,18 +1,5 @@
 import * as XLSX from "xlsx";
-
-export interface ProcessedOrder {
-  buyer_id: number;
-  name: string;
-  email: string;
-  country: string;
-  state: string;
-  city: string;
-  zip: string;
-  first_line: string;
-  second_line: string;
-  product_identifier: string;
-  title: string;
-}
+import { ProcessedOrder } from "./interface";
 
 export function exportToExcel(data: ProcessedOrder[]) {
   // Create a CSV string from the data
@@ -74,23 +61,31 @@ export function exportToExcel(data: ProcessedOrder[]) {
       const senderTaxInfo = getSenderTaxInfo(item.country);
 
       // o. Set picking list information
-      const pickingListInfo = `${item.product_identifier} - ${item.title}`;
+      // const pickingListInfo = `${item.product_identifier} - ${item.title}`;
+      const pickingListInfo = item.products
+        .map(
+          (p) =>
+            `${p.product_identifier}${
+              p.quantity > 1 ? `*${p.quantity}` : ""
+            } - ${p.title}`
+        )
+        .join("; ");
       return [
         orderNumber, // 订单号
         "", // 平台交易号
         warehouse, // 交货仓
         productName, // 产品名称
-        escapeCsvValue(item.name), // 收件人姓名
+        item.name, // 收件人姓名
         phoneNumber, // 收件人电话
-        escapeCsvValue(item.email), // 收件人邮箱
+        item.email, // 收件人邮箱
         "", // 收件人税号
         "", // 收件人公司
         countryInChinese, // 收件人国家
-        escapeCsvValue(item.state), // 收件人省/州
-        escapeCsvValue(item.city), // 收件人城市
-        escapeCsvValue(item.zip), // 收件人邮编
-        escapeCsvValue(item.first_line), // 收件人地址
-        escapeCsvValue(item.second_line), // 收件人门牌号
+        item.state, // 收件人省/州
+        item.city, // 收件人城市
+        item.zip, // 收件人邮编
+        item.first_line, // 收件人地址
+        item.second_line, // 收件人门牌号
         "", // 销售平台
         senderTaxInfo, // 发件人税号信息
         "", // CSP
@@ -100,7 +95,7 @@ export function exportToExcel(data: ProcessedOrder[]) {
         "", // 收款到账日期
         "美元", // 币种类型
         "否", // 是否含电
-        escapeCsvValue(pickingListInfo), // 拣货单信息
+        pickingListInfo, // 拣货单信息
         "", // IOSS税号
         "", // 中文品名1
         "", // 英文品名1
@@ -110,7 +105,7 @@ export function exportToExcel(data: ProcessedOrder[]) {
         "", // 商品材质1
         "", // 商品海关编码1
         "", // 商品链接1
-        escapeCsvValue(item.product_identifier), // SKU1
+        item.product_identifier, // SKU1
       ];
     }),
   ];
@@ -160,19 +155,6 @@ export function exportToExcel(data: ProcessedOrder[]) {
   link.click();
   document.body.removeChild(link);
 }
-
-// Helper function to escape CSV values
-const escapeCsvValue = (value: string) => {
-  // If the value contains commas, quotes, or newlines, wrap it in quotes
-  if (
-    value &&
-    (value.includes(",") || value.includes('"') || value.includes("\n"))
-  ) {
-    // Replace any quotes with double quotes
-    return `"${value.replace(/"/g, '""')}"`;
-  }
-  return value;
-};
 
 function getCountryInChinese(country: string): string {
   const countryMap: Record<string, string> = {

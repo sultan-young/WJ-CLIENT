@@ -1,88 +1,4 @@
-export interface ProcessedData {
-  name: string;
-  email: string;
-  country: string;
-  state: string;
-  city: string;
-  zip: string;
-  first_line: string;
-  second_line: string;
-  product_identifier: string;
-  title: string;
-}
-
-interface Buyer {
-  buyer_id: number;
-  email: string;
-  name: string;
-}
-
-interface Product {
-  product_identifier: string;
-  title: string;
-}
-
-interface Transaction {
-  product: Product;
-}
-
-interface ToAddress {
-  name: string;
-  country: string;
-  state: string;
-  city: string;
-  zip: string;
-  first_line: string;
-  second_line: string;
-}
-
-interface Fulfillment {
-  to_address: ToAddress;
-}
-
-interface Order {
-  buyer_id: number;
-  transactions: Transaction[];
-  fulfillment: Fulfillment;
-}
-
-interface JsonData {
-  buyers: Buyer[];
-  orders: Order[];
-}
-
-export function processData(jsonData: JsonData): ProcessedData[] {
-  const processedData: ProcessedData[] = [];
-
-  // Process each order
-  jsonData.orders.forEach((order) => {
-    // Find the buyer that matches the order's buyer_id
-    const buyer = jsonData.buyers.find((b) => b.buyer_id === order.buyer_id);
-
-    if (!buyer) return;
-
-    // Process each transaction in the order
-    order.transactions.forEach((transaction) => {
-      const { product } = transaction;
-      const { to_address } = order.fulfillment;
-
-      // Create a new processed data entry
-      processedData.push({
-        name: to_address.name,
-        email: buyer.email,
-        country: to_address.country,
-        state: to_address.state,
-        city: to_address.city,
-        zip: to_address.zip,
-        first_line: to_address.first_line,
-        second_line: to_address.second_line || "",
-        product_identifier: product.product_identifier,
-        title: product.title,
-      });
-    });
-  });
-  return processedData;
-}
+import { ProductInfo, ProcessedOrder, Buyer, JsonData } from "./interface";
 
 export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
   const processedOrders: ProcessedOrder[] = [];
@@ -93,52 +9,117 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
     buyersMap.set(buyer.buyer_id, buyer);
   });
 
+  // Group orders by buyer_id, zip, first_line, and second_line
+  const orderMap = new Map<
+    string,
+    {
+      buyer_id: number;
+      email: string;
+      name: string;
+      country: string;
+      state: string;
+      city: string;
+      zip: string;
+      first_line: string;
+      second_line: string;
+      products: ProductInfo[];
+    }
+  >();
+
   // Process each order
   jsonData.orders.forEach((order) => {
     const buyer = buyersMap.get(order.buyer_id);
 
     if (!buyer) return;
 
-    // Process each transaction in the order
-    order.transactions.forEach((transaction) => {
-      const { product } = transaction;
-      const { to_address } = order.fulfillment;
+    const { to_address } = order.fulfillment;
 
-      processedOrders.push({
-        // Buyer ID
+    // Create a unique key based on buyer_id, zip, first_line, and second_line
+    const addressKey = `${order.buyer_id}_${to_address.zip || ""}_${
+      to_address.first_line
+    }_${to_address.second_line || ""}`;
+
+    // Get or create the order entry
+    let orderEntry = orderMap.get(addressKey);
+
+    if (!orderEntry) {
+      orderEntry = {
         buyer_id: buyer.buyer_id,
-
-        // Buyer information
         email: buyer.email,
-
-        // Address information
         name: to_address.name,
         country: to_address.country,
         state: to_address.state,
         city: to_address.city,
-        zip: to_address.zip,
+        zip: to_address.zip || "", // Use zip if it exists, otherwise empty string
         first_line: to_address.first_line,
         second_line: to_address.second_line || "",
+        products: [],
+      };
 
-        // Product information
-        product_identifier: product.product_identifier,
-        title: product.title,
-      });
+      orderMap.set(addressKey, orderEntry);
+    }
+
+    // Add all products from this order
+    order.transactions.forEach((transaction) => {
+      const { product } = transaction;
+
+      // Calculate quantity
+      let quantity = transaction.quantity || 1;
+
+      // Check if there's a "Quantity" property in variations
+      if (transaction.variations) {
+        const quantityVariation = transaction.variations.find(
+          (v) => v.property === "Quantity"
+        );
+
+        if (quantityVariation) {
+          // Multiply by transaction quantity
+          const variationQuantity =
+            Number.parseInt(quantityVariation.value, 10) || 1;
+          quantity = quantity * variationQuantity;
+        }
+      }
+
+      // Check if this product is already in the list
+      const existingProductIndex = orderEntry!.products.findIndex(
+        (p) =>
+          p.product_identifier === product.product_identifier &&
+          p.title === product.title
+      );
+
+      if (existingProductIndex >= 0) {
+        // Product exists, update quantity
+        orderEntry!.products[existingProductIndex].quantity += quantity;
+      } else {
+        // Add new product
+        orderEntry!.products.push({
+          product_identifier: product.product_identifier,
+          title: product.title,
+          quantity: quantity,
+        });
+      }
+    });
+  });
+
+  // Convert the map to an array of processed orders
+  orderMap.forEach((entry) => {
+    processedOrders.push({
+      buyer_id: entry.buyer_id,
+      email: entry.email,
+      name: entry.name,
+      country: entry.country,
+      state: entry.state,
+      city: entry.city,
+      zip: entry.zip,
+      first_line: entry.first_line,
+      second_line: entry.second_line,
+      product_identifier: entry.products
+        .map((p) => p.product_identifier)
+        .join(", "),
+      title: entry.products.map((p) => p.title).join(", "),
+      products: entry.products,
     });
   });
 
   return processedOrders;
-}
-export interface ProcessedOrder {
-  buyer_id: number;
-  name: string;
-  email: string;
-  country: string;
-  state: string;
-  city: string;
-  zip: string;
-  first_line: string;
-  second_line: string;
-  product_identifier: string;
-  title: string;
 }
