@@ -1,0 +1,127 @@
+/* 所有元素和伪元素的盒模型重置 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+}
+
+/* 基础重置 */
+html {
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  scroll-behavior: smooth;
+  text-rendering: optimizeSpeed;
+}
+
+/* 移除列表样式 */
+ul,
+ol {
+  list-style: none;
+}
+
+/* 表单元素重置 */
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+}
+
+button,
+input {
+  overflow: visible;
+}
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  -webkit-appearance: button;
+}
+
+/* 链接样式重置 */
+a {
+  background-color: transparent;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 媒体元素重置 */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 表格重置 */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* 引用元素重置 */
+blockquote,
+q {
+  quotes: none;
+}
+
+blockquote::before,
+blockquote::after,
+q::before,
+q::after {
+  content: '';
+  content: none;
+}
+
+/* 代码元素重置 */
+pre {
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+/* 隐藏属性 */
+[hidden] {
+  display: none !important;
+}
+
+/* 重置标题默认样式 */
+h1, h2, h3, h4, h5, h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* 禁用默认图片间隙 */
+img {
+  font-style: italic;
+  vertical-align: middle;
+}
+
+/* 重置 figure 元素 */
+figure {
+  margin: 0;
+}
+
+/* 禁用文本换行 */
+textarea {
+  white-space: revert;
+  resize: vertical;
+}
+
+/* 禁用输入框轮廓线 */
+input:focus,
+textarea:focus,
+button:focus {
+  outline: none;
+}

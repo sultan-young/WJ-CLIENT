@@ -12,11 +12,22 @@
 .ant-card-cover {
   display: flex;
   align-items: center;
+  object-fit: cover;
   justify-content: center;
   /* max-height: 280px; */
-  height: 300px;
+  width: 100%;
+  
   overflow: hidden;
   /* max-width: 280px; */
+}
+
+.ant-card-cover .ant-image {
+  height: 200px;
+}
+.ant-card-cover .ant-image-img {
+  width: 100%;
+  object-fit: cover;
+  height: 100%;
 }
 /* SKU编号样式 */
 .product-card .sku {

@@ -1,10 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { Input, Select, Button, List, Drawer, message,ConfigProvider } from "antd";
-import { AntDesignOutlined } from '@ant-design/icons';
 import {
-  getProducts,
-  searchProduct,
-} from "../../services/productService";
+  Input,
+  Select,
+  Button,
+  List,
+  Drawer,
+  message,
+  ConfigProvider,
+  Row,
+  Col,
+} from "antd";
+import { AntDesignOutlined } from "@ant-design/icons";
+import { getProducts, searchProduct } from "../../services/productService";
 import "./styles.css";
 import ProductForm from "../ProductForm";
 import { updateProduct, deleteProduct } from "../../services/productService";
@@ -52,7 +59,7 @@ const ProductList = () => {
       };
       await updateProduct(updatedProduct);
       message.success("更新成功");
-      formRef.current.reset()
+      formRef.current.reset();
       setSelectedProduct(null);
       loadData();
       // 这里需要更新商品列表状态或重新获取数据
@@ -98,30 +105,46 @@ const ProductList = () => {
 
   const onSearch = async (data) => {
     const res = await searchProduct({
-     queryParams: data
+      queryParams: data,
     });
     setProducts(res.result);
   };
 
   return (
     <div className="product-list-page">
-      <div style={{display:'flex',alignItems:'center',marginBottom:'24px'}}>
-      <SearchBox
-        onSearch={(data) => {
-          onSearch(data);
-        }}
-        style={{flex:'1 1 0'}}
-      ></SearchBox>
-      <Button type="primary" onClick={() => setDrawerVisible(true)} icon={<AntDesignOutlined />} className="add-button">
-        录入商品
-      </Button> 
-       
-      </div>
-      
-       
+      <Row
+        gutter={6}
+        style={{ display: "flex", alignItems: "center", marginBottom: "24px" }}
+      >
+        <Col span={18}>
+          <SearchBox
+            onSearch={(data) => {
+              onSearch(data);
+            }}
+            style={{ flex: "1 1 0" }}
+          ></SearchBox>
+        </Col>
+        <Col span={6}>
+          <Button
+            type="primary"
+            onClick={() => setDrawerVisible(true)}
+            className="add-button"
+          >
+            录入商品
+          </Button>
+        </Col>
+      </Row>
 
       <List
-        grid={{ gutter: 16, column: products?.length > 1 ? 3 : 1 }}
+        grid={{
+          gutter: 6,
+          xs: 2,
+          sm: 2,
+          md: 4,
+          lg: 4,
+          xl: 6,
+          xxl: 8,
+        }}
         dataSource={products}
         renderItem={(item) => (
           <List.Item>

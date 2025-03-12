@@ -1,7 +1,6 @@
 .search-box-container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 0 20px;
   flex: 1 1 0;
 }
 
@@ -25,7 +24,7 @@
   padding: 15px 25px;
   border: none;
   background: transparent;
-  font-size: 1.1rem;
+  width: 100%;
   color: #4a5568;
   outline: none;
   border-radius: 30px;
@@ -44,7 +43,6 @@
   border-radius: 25px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-left: 10px;
   display: flex;
   align-items: center;
   justify-content: center;

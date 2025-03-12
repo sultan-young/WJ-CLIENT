@@ -21,6 +21,7 @@ import Unauthorized from "./pages/Unauthorized";
 import OrderList from "./pages/orders/orderList";
 import ShippingCenter from "./pages/ShippingCenter";
 import { PreloadDataProvider } from "./context/AppContext";
+import './reset.css'
 
 const { Content } = Layout;
 

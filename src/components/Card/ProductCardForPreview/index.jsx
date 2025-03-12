@@ -64,8 +64,6 @@ const ProductCardForPreview = ({
             src={imageUrls[0]}
             wrapperStyle={{
               width: "100%",
-              maxWidth: "400px",
-              maxHeight: "420px",
             }}
           />
         </Image.PreviewGroup>
