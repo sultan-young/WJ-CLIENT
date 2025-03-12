@@ -10,7 +10,7 @@ export let mockList = [
             $oid: "67cbfa833c83898c06163d75",
         }, ],
         stock: 0,
-        nameCN: "爱心眼球",
+        nameCn: "爱心眼球",
         images: [{
             name: "example.jpg",
             picturebedId: "67cc4f7e066befcec6e161f0",
@@ -41,7 +41,7 @@ export let mockList = [
             $oid: "67cbfa833c83898c06163d75",
         }, ],
         stock: 0,
-        nameCN: "爱心眼球",
+        nameCn: "爱心眼球",
         images: [{
             name: "example.jpg",
             picturebedId: "67cc4f7e066befcec6e161f0",
@@ -72,7 +72,7 @@ export let mockList = [
             $oid: "67cc4f5ae186963e50d7b064",
         }, ],
         stock: 3,
-        nameCN: "黑底蓝瞳",
+        nameCn: "黑底蓝瞳",
         images: [{
             name: "Handcrafted Resin Eyeball Jewelry, Sweet Eyeball Pendant, Gothic Charm.jpg",
             picturebedId: "67cc4b6a066befcec6e15f26",
@@ -100,7 +100,7 @@ export let mockList = [
             $oid: "67cbfa833c83898c06163d75",
         }, ],
         stock: 0,
-        nameCN: "爱心眼球",
+        nameCn: "爱心眼球",
         images: [{
             name: "example.jpg",
             picturebedId: "67cc4f7e066befcec6e161f0",
@@ -131,7 +131,7 @@ export let mockList = [
             $oid: "67cbfa833c83898c06163d75",
         }, ],
         stock: 0,
-        nameCN: "爱心眼球",
+        nameCn: "爱心眼球",
         images: [{
             name: "example.jpg",
             picturebedId: "67cc4f7e066befcec6e161f0",
@@ -162,7 +162,7 @@ export let mockList = [
             $oid: "67cc4f5ae186963e50d7b064",
         }, ],
         stock: 3,
-        nameCN: "黑底蓝瞳",
+        nameCn: "黑底蓝瞳",
         images: [{
             name: "Handcrafted Resin Eyeball Jewelry, Sweet Eyeball Pendant, Gothic Charm.jpg",
             picturebedId: "67cc4b6a066befcec6e15f26",

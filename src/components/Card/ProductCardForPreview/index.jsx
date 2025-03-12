@@ -53,7 +53,7 @@ const ProductCardForPreview = ({
 
   return (
     <DealCard
-      // title={product.nameCN}
+      // title={product.nameCn}
       variant="borderless"
       single={isSingleShow || undefined}
       cover={
@@ -120,7 +120,7 @@ const ProductCardForPreview = ({
     >
       <Meta
         // avatar={<Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />}
-        title={`${product.nameCN}(${product.sku})`}
+        title={`${product.nameCn}(${product.sku})`}
         // description={product.notes}
       />
       {/* <Image.PreviewGroup width={200} items={imageUrls}>

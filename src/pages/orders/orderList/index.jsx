@@ -13,7 +13,6 @@ import { SearchOutlined } from "@ant-design/icons";
 import "./index.css";
 import ProductCardForSelectOrder from "../../../components/Card/ProductCardForSelectOrder";
 import CreateOrder from "../createOrder";
-import { usePreloadData } from "../../../context/AppContext";
 import {
   deleteSupplierOrder,
   fitchSupplierOrder,

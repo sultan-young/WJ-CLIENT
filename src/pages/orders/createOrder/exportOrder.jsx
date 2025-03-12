@@ -312,7 +312,7 @@ const ExportOrder = forwardRef(
                             <span
                               className="product-card-title"
                               style={{ margin: "6px 0", textAlign: "center" }}
-                            >{`${item.nameCN}(${item.sku})`}</span>
+                            >{`${item.nameCn}(${item.sku})`}</span>
 
                             {/* <span
                               className="product-card-desc"

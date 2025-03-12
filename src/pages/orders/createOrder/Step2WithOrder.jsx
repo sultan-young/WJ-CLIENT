@@ -145,7 +145,7 @@ const Step2WithOrder = forwardRef(
                         />
                       ))}
                     </Image.PreviewGroup>
-                    <span className="product-card-title">{`${item.nameCN}(${item.sku})`}</span>
+                    <span className="product-card-title">{`${item.nameCn}(${item.sku})`}</span>
                     <span className="product-card-desc">{`仓库剩余库存 ${item.stock}`}</span>
                     <div style={{ textAlign: "center", marginTop: 4 }}>
                       <div

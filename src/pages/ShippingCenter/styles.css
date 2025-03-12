@@ -14,15 +14,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 表单元素间距 */
-.ant-form-item {
-  margin-bottom: 20px !important;
-}
-
-/* 价格输入框样式 */
-.ant-input-number {
-  width: 200px !important;
-}
 
 /* 上传组件样式 */
 .ant-upload.ant-upload-select-picture-card {

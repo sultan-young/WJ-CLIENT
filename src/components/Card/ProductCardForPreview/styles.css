@@ -29,6 +29,12 @@
   object-fit: cover;
   height: 100%;
 }
+
+.ant-card-body {
+  width: 100%;
+  overflow: hidden;
+}
+
 /* SKU编号样式 */
 .product-card .sku {
   color: #666;

@@ -1,52 +1,102 @@
 .product-form-container {
-    max-width: 1200px;
-    padding: 24px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 1200px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 表单元素间距 */
+.ant-form-item {
+  margin-bottom: 20px !important;
+}
+
+/* 价格输入框样式 */
+.ant-input-number {
+  /* width: 200px !important; */
+}
+
+/* 上传组件样式 */
+.ant-upload.ant-upload-select-picture-card {
+  width: 150px;
+  height: 150px;
+  margin-right: 8px;
+}
+
+.ant-upload-list-picture-card-container {
+  width: 150px;
+  height: 150px;
+}
+
+/* 标签管理样式 */
+.tag-management .ant-select {
+  width: 100%;
+}
+
+.tag-management .ant-tag {
+  margin-bottom: 4px;
+  padding: 4px 8px;
+  background: #f0f2f5;
+  border-radius: 4px;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .product-form-container {
+    padding: 12px;
   }
-  
-  /* 表单元素间距 */
-  .ant-form-item {
-    margin-bottom: 20px !important;
-  }
-  
-  /* 价格输入框样式 */
+
   .ant-input-number {
-    width: 200px !important;
+    width: 100% !important;
   }
-  
-  /* 上传组件样式 */
-  .ant-upload.ant-upload-select-picture-card {
-    width: 150px;
-    height: 150px;
-    margin-right: 8px;
-  }
-  
-  .ant-upload-list-picture-card-container {
-    width: 150px;
-    height: 150px;
-  }
-  
-  /* 标签管理样式 */
-  .tag-management .ant-select {
-    width: 100%;
-  }
-  
-  .tag-management .ant-tag {
-    margin-bottom: 4px;
-    padding: 4px 8px;
-    background: #f0f2f5;
-    border-radius: 4px;
-  }
-  
-  /* 响应式布局 */
-  @media (max-width: 768px) {
-    .product-form-container {
-      padding: 12px;
-    }
-    
-    .ant-input-number {
-      width: 100% !important;
-    }
-  }
+}
+
+.profit-container {
+  padding: 10px;
+  background-color: #fff; /* 背景颜色为白色 */
+  border-radius: 8px; /* 圆角边框，半径为8px */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果，增强立体感 */
+  overflow: hidden; /* 隐藏超出内容 */
+  transition: all 0.3s ease; /* 添加过渡效果，让变化更平滑 */
+}
+
+.profit-container-title {
+  font-size: 1.25rem; /* 标题字体大小 */
+  font-weight: bold; /* 标题字体加粗 */
+  margin-bottom: 10px; /* 标题与下方内容的间距 */
+}
+
+.profit-container:hover {
+  transform: translateY(-5px); /* 鼠标悬停时卡片向上移动5px */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 鼠标悬停时阴影加深 */
+}
+
+.profit-container-item {
+  font-size: 0.9rem; /* 文字内容字体大小 */
+  line-height: 1.5; /* 行高为1.5倍字体大小 */
+  color: #666; /* 文字颜色为灰色 */
+  margin-bottom: 10px; /* 文字与下方内容的间距 */
+  display: flex;
+  justify-content: space-between;
+}
+
+.profit-container-item span:nth-child(1) {
+  color: #333;
+}
+
+.profit-container-item span:last-child {
+  color: #333;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.discount-item {
+  display: flex;
+  justify-content: space-between;
+}
+.discount-item span {
+  font-size: 12px;
+}
+.discount-item span:last-child {
+  font-weight: 600;
+}
