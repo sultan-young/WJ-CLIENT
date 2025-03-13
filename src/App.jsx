@@ -10,7 +10,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { Layout, Menu, Slider, Spin, theme } from "antd";
-import ProductList from "./pages/ProductList";
+import ProductList from "./pages/ProductForm/ProductList";
 import ProductForm from "./pages/ProductForm";
 import SupplierLogin from "./pages/SupplierLogin";
 import AdminLogin from "./pages/AdminLogin";

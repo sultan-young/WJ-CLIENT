@@ -11,13 +11,13 @@ import {
   Col,
 } from "antd";
 import { AntDesignOutlined } from "@ant-design/icons";
-import { getProducts, searchProduct } from "../../services/productService";
+import { getProducts, searchProduct } from "../../../services/productService";
 import "./styles.css";
-import ProductForm from "../ProductForm";
-import { updateProduct, deleteProduct } from "../../services/productService";
-import SearchBox from "../../components/searchBox";
-import OrderList from "../orders/orderList";
-import ProductCardForPreview from "../../components/Card/ProductCardForPreview";
+import ProductForm from "..";
+import { updateProduct, deleteProduct } from "../../../services/productService";
+import SearchBox from "../../../components/searchBox";
+import OrderList from "../../orders/orderList";
+import ProductCardForPreview from "../../../components/Card/ProductCardForPreview";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);

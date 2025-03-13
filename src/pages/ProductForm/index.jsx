@@ -109,6 +109,7 @@ const ProductForm = forwardRef((props, ref) => {
   } = props;
 
   // 组件状态
+  // TODO: 这里可优化，tags还未加入到form中
   const [tags, setTags] = useState([]);
   const [inputTag, setInputTag] = useState("");
   const [suppliers, setSuppliers] = useState([]);
