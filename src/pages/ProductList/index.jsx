@@ -199,9 +199,7 @@ const ProductList = () => {
         <ProductForm
           ref={formRef}
           hideSubmitButton
-          initialValues={selectedProduct && {
-            ...selectedProduct,
-          }}
+          initialValues={selectedProduct && selectedProduct}
           onUpdate={updateProduct}
           toggleSubmitBtnLoadings={toggleSubmitBtnLoadings}
         />

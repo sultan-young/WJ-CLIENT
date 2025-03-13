@@ -37,6 +37,8 @@ import {
   rmb2usd,
 } from "../../utils/calculateProfit";
 
+let imageUrlList = []
+
 const renderDiscountPanelItems = (price = 0) => {
   let _price = (Number(price) || 0).toFixed(2);
   return [
@@ -107,14 +109,12 @@ const ProductForm = forwardRef((props, ref) => {
   } = props;
 
   // 组件状态
-  const [fileList, setFileList] = useState([]);
   const [tags, setTags] = useState([]);
   const [inputTag, setInputTag] = useState("");
   const [suppliers, setSuppliers] = useState([]);
   // 货架列表
   const [productCategoryList, setProductCategoryList] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [imageUrlList, setImageUrlList] = useState([]);
   const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
   const [profitData, setProfitData] = useState({
     grossProfitMargin: 0,
@@ -124,6 +124,11 @@ const ProductForm = forwardRef((props, ref) => {
 
   const handleFormChange = () => {
     autoCalculateProfit();
+  };
+
+  const normFile = (e) => {
+    if (Array.isArray(e)) return e;
+    return e?.fileList;
   };
 
   const autoCalculateProfit = () => {
@@ -172,7 +177,11 @@ const ProductForm = forwardRef((props, ref) => {
   // 初始化表单值
   const initializeForm = () => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      const _values = {
+        ...initialValues,
+        images: (initialValues.images || []).map(item => ({url: item.url, uid: item.uid, name: item.name}))
+      }
+      form.setFieldsValue(_values);
       setTags(initialValues.tags || []);
       const images = (initialValues.images || []).map(
         ({ url, uid, name, picturebedId }) => ({
@@ -183,8 +192,7 @@ const ProductForm = forwardRef((props, ref) => {
           picturebedId,
         })
       );
-      setFileList(images);
-      setImageUrlList(images);
+      imageUrlList = images;
       autoCalculateProfit();
     } else {
       resetAll()
@@ -239,11 +247,10 @@ const ProductForm = forwardRef((props, ref) => {
   });
 
   const resetAll = async () => {
-    setFileList([]);
     setTags([]);
     setInputTag("");
     setLoading(false);
-    setImageUrlList([]);
+    imageUrlList = []
     setSubmitBtnLoadings(false);
     form.resetFields();
   };
@@ -302,16 +309,13 @@ const ProductForm = forwardRef((props, ref) => {
           throw Error(msg);
         }
         // 假设聚合图床返回的图片地址为 `data.url`
-        setImageUrlList([
-          ...imageUrlList,
-          {
-            url,
-            picturebedId: id,
-            uid: file.uid,
-            name,
-            size,
-          },
-        ]);
+        imageUrlList.push({
+          url,
+          picturebedId: id,
+          uid: file.uid,
+          name,
+          size,
+        })
         onSuccess("Success");
         message.success("图片上传成功！");
       })
@@ -344,7 +348,7 @@ const ProductForm = forwardRef((props, ref) => {
         changeSubmitBtnLoadings(false);
       });
     const newImageUrlList = imageUrlList.filter((item) => item.uid !== uid);
-    setImageUrlList(newImageUrlList);
+    imageUrlList = newImageUrlList;
   };
 
   return (
@@ -358,7 +362,6 @@ const ProductForm = forwardRef((props, ref) => {
         price: 0,
         shippingFeeRMB: 35,
         hasVariant: 0,
-        ...initialValues,
       }}
     >
       {/* 商品名称 */}
@@ -518,33 +521,40 @@ const ProductForm = forwardRef((props, ref) => {
       {/* 图片上传 */}
       <Form.Item
         label="商品图片"
-        names="images"
-        rules={[{ required: true, message: "请至少上传一张图片" }]}
+        name="images"
+        valuePropName="fileList"
+        getValueFromEvent={normFile}
+        rules={[
+          () => ({
+            validator(_, fileList) {
+              if ((fileList || []).length >= 1) {
+                return Promise.resolve();
+              }
+              return Promise.reject(new Error('至少上传一张图片'));
+            },
+          }),
+        ]}
       >
         <Upload
           customRequest={customUpload}
           listType="picture-card"
-          fileList={fileList}
           beforeUpload={beforeUpload}
           onRemove={onRemoveImage}
-          onChange={({ fileList }) => {
-            setFileList(fileList);
-          }}
           accept="image/*"
           multiple
           maxCount={5}
         >
-          {fileList.length >= 5 ? null : (
+          {(form.getFieldValue('images') || []).length >= 5 ? null : (
             <div>
               <UploadOutlined />
-              <div>上传图片（最多5张）</div>
+              <div>上传图片（最多5张, 可批量上传）</div>
             </div>
           )}
         </Upload>
       </Form.Item>
 
       {/* 标签管理 */}
-      <Form.Item label="商品标签">
+      <Form.Item name="tags" label="商品标签">
         <div className="tag-manager">
           <Select
             mode="tags"
