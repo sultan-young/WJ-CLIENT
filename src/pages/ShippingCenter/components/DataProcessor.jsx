@@ -48,13 +48,14 @@ export function DataProcessor() {
 
   const handleExport = async () => {
     const data = tableRef.current.exportData || [];
-    const result = await makeYwOrder({orderList: data})
+    const result = await makeYwOrder({ orderList: data });
     if (data.length === 0) {
       message.error("没有数据可导出");
       return;
     }
     // console.log(tableRef.current);
     exportToExcel(result);
+    // exportToExcel(data);
   };
 
   return (

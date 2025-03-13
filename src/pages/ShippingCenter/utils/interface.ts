@@ -2,6 +2,7 @@ export interface ProductInfo {
   product_identifier: string;
   title: string;
   quantity: number;
+  personalisation?: string; // 用户个性化定制
 }
 
 export interface ProcessedOrder {
@@ -16,7 +17,9 @@ export interface ProcessedOrder {
   second_line: string;
   product_identifier: string;
   title: string;
+  option?: string;
   products: ProductInfo[];
+  merchant_notes: string[];
 }
 
 export interface Buyer {
@@ -51,6 +54,13 @@ export interface Transaction {
   variations?: Variation[];
 }
 
+interface Note {
+  note: string;
+}
+
+interface Notes {
+  private_order_notes: Note[];
+}
 export interface Fulfillment {
   to_address: ToAddress;
 }
@@ -60,6 +70,7 @@ export interface Order {
   transactions: Transaction[];
   fulfillment: Fulfillment;
   order_id: string;
+  notes?: Notes;
 }
 
 export interface JsonData {
