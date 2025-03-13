@@ -103,16 +103,17 @@
   gap: 24px;
 }
 
-.order-column {
+/* .order-column {
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
+} */
 
 .order-item {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   gap: 4px;
+  align-items: center;
 }
 
 @media (max-width: 640px) {
@@ -150,7 +151,7 @@
 }
 
 .style-1 .order-item-label {
-  font-size: 13px;
+  font-size: 14px;
   color: #888;
 }
 
@@ -161,11 +162,11 @@
 
 .style-1 .order-item.important .order-item-label {
   color: #333;
-  font-weight: 500;
+  /* font-weight: 500; */
 }
 
 .style-1 .order-item.important .order-item-value {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #333;
 }

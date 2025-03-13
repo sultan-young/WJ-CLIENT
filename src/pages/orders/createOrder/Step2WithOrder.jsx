@@ -23,7 +23,7 @@ import { searchProduct } from "../../../services/productService";
 import dayjs from "dayjs";
 
 const Step2WithOrder = forwardRef(
-  ({ supplierId, defaultSelectOrder = [], defaultSelectShipDate }, ref) => {
+  ({ supplierId, defaultSelectOrder = [] }, ref) => {
     const [quantities, setQuantities] = useState({});
     const [productList, setProductList] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -39,12 +39,12 @@ const Step2WithOrder = forwardRef(
       setProductList([]);
 
       // 将默认时间回填
-      if (defaultSelectShipDate) {
-        ref.current.formData.setFieldValue(
-          "shippingDate",
-          dayjs(defaultSelectShipDate)
-        );
-      }
+      // if (defaultSelectShipDate) {
+      //   ref.current.formData.setFieldValue(
+      //     "shippingDate",
+      //     dayjs(defaultSelectShipDate)
+      //   );
+      // }
 
       const fetchData = async () => {
         if (!supplierId) {
@@ -113,7 +113,7 @@ const Step2WithOrder = forwardRef(
         className="product-image-card"
         style={{ padding: "20px" }}
       >
-        <Form ref={ref} layout="vertical">
+        {/* <Form ref={ref} layout="vertical">
           <Form.Item
             label="发货日期"
             name="shippingDate"
@@ -121,7 +121,7 @@ const Step2WithOrder = forwardRef(
           >
             <DatePicker />
           </Form.Item>
-        </Form>
+        </Form> */}
         {productList.length ? (
           <Row gutter={[16, 16]}>
             {productList.map((item) => (
