@@ -20,7 +20,7 @@ import {
   Radio,
 } from "antd";
 import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
-import { getSuppliers } from "../../services/supplierService";
+import { getSuppliers } from "../../../services/supplierService";
 import "./styles.css";
 import axios from "axios";
 import {
@@ -29,13 +29,13 @@ import {
   getProductCategoryList,
   getUploadProductImageSign,
   updateProduct,
-} from "../../services/productService";
+} from "../../../services/productService";
 import {
   calculateGrossProfit,
   calculateNetProfit,
   calculateProductProfitRMB,
   rmb2usd,
-} from "../../utils/calculateProfit";
+} from "../../../utils/calculateProfit";
 
 let imageUrlList = []
 
