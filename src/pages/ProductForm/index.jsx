@@ -3,7 +3,6 @@ import React, {
   useEffect,
   useImperativeHandle,
   forwardRef,
-  useMemo,
 } from "react";
 import {
   Form,
@@ -18,6 +17,7 @@ import {
   Row,
   Col,
   Collapse,
+  Radio,
 } from "antd";
 import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
 import { getSuppliers } from "../../services/supplierService";
@@ -87,6 +87,17 @@ const renderDiscountPanelItems = (price = 0) => {
 const ProductForm = forwardRef((props, ref) => {
   // 基础配置
   const [form] = Form.useForm();
+  // 监听 Radio 值变化
+  const hasVariant = Form.useWatch("hasVariant", form);
+
+  // 当隐藏输入框时，清除字段值和校验信息
+  useEffect(() => {
+    if (hasVariant !== 1) {
+      form.setFieldsValue({ variantSerial: undefined }); // 清除输入框值
+      form.validateFields(["variantSerial"]); // 清除校验状态
+    }
+  }, [hasVariant, form]);
+
   const {
     initialValues,
     hideSubmitButton = false,
@@ -227,9 +238,6 @@ const ProductForm = forwardRef((props, ref) => {
     setFileList([]);
     setTags([]);
     setInputTag("");
-    setSuppliers([]);
-    // 货架列表
-    setShelfList([]);
     setLoading(false);
     setImageUrlList([]);
     setSubmitBtnLoadings(false);
@@ -340,6 +348,7 @@ const ProductForm = forwardRef((props, ref) => {
         stock: 0,
         price: 0,
         shippingFeeRMB: 35,
+        hasVariant: 0,
         ...initialValues,
       }}
     >
@@ -446,7 +455,7 @@ const ProductForm = forwardRef((props, ref) => {
           <InputNumber min={0} />
         </Form.Item>
         <Form.Item
-          label="所在货架"
+          label="所属分类"
           name="shelf"
           rules={[{ required: true, message: "请选择所属货架" }]}
         >
@@ -466,6 +475,36 @@ const ProductForm = forwardRef((props, ref) => {
           />
         </Form.Item>
       </Space>
+
+      <Row gutter={5}>
+        <Col>
+          <Form.Item
+            name="hasVariant"
+            label="是否有变体"
+            tooltip="如果选中有变体，则需要输入一个编号，此编号将被追加到sku后，例如A-0001-N1"
+          >
+            <Radio.Group>
+              <Radio value={0}> 无变体 </Radio>
+              <Radio value={1}> 有变体 </Radio>
+            </Radio.Group>
+          </Form.Item>
+        </Col>
+        <Col>
+          {hasVariant ? (
+            <Form.Item
+              label=" "
+              rules={[
+                { required: true, message: "选中变体时候，必须输入编号" },
+              ]}
+              name="variantSerial"
+            >
+              <Input placeholder="请输入变体编号，此编号将被追加到sku后，例如A-0001-N1" />
+            </Form.Item>
+          ) : (
+            <></>
+          )}
+        </Col>
+      </Row>
 
       {/* 图片上传 */}
       <Form.Item
