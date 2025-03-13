@@ -58,6 +58,7 @@ export function DataProcessor() {
     // exportToExcel(data);
   };
 
+  console.log(data, 888);
   return (
     <div>
       <div style={{ paddingTop: "1.5rem" }}>

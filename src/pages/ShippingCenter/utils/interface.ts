@@ -3,6 +3,13 @@ export interface ProductInfo {
   title: string;
   quantity: number;
   personalisation?: string; // 用户个性化定制
+  transaction_id: string | number; // 添加transaction_id
+  order_id: string | number; // 添加order_id
+}
+
+export interface MerchantNote {
+  note: string;
+  order_id: string | number; // 添加order_id
 }
 
 export interface ProcessedOrder {
@@ -19,7 +26,7 @@ export interface ProcessedOrder {
   title: string;
   option?: string;
   products: ProductInfo[];
-  merchant_notes: string[];
+  merchant_notes: MerchantNote[]; // 修改为包含order_id的结构
 }
 
 export interface Buyer {
@@ -52,6 +59,7 @@ export interface Transaction {
   product: Product;
   quantity: number;
   variations?: Variation[];
+  transaction_id: string | number;
 }
 
 interface Note {

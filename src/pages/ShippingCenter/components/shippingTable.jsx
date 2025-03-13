@@ -106,7 +106,7 @@ const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
       title: "商家备注",
       dataIndex: "merchant_notes",
       width: 150,
-      render: (text) => text?.join(","),
+      render: (text) => text?.map?.((a) => a.note)?.join(","),
     },
     {
       title: "操作",

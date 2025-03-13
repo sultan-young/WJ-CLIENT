@@ -1,4 +1,10 @@
-import { ProductInfo, ProcessedOrder, Buyer, JsonData } from "./interface";
+import {
+  ProductInfo,
+  ProcessedOrder,
+  Buyer,
+  JsonData,
+  MerchantNote,
+} from "./interface";
 
 export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
   const processedOrders: ProcessedOrder[] = [];
@@ -23,7 +29,7 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
       first_line: string;
       second_line: string;
       products: ProductInfo[];
-      merchant_notes: string[];
+      merchant_notes: MerchantNote[];
     }
   >();
 
@@ -64,11 +70,19 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
     // Add merchant notes if they exist
     if (order.notes && order.notes.private_order_notes) {
       order.notes.private_order_notes.forEach((noteObj) => {
-        if (
-          noteObj.note &&
-          !orderEntry!.merchant_notes.includes(noteObj.note)
-        ) {
-          orderEntry!.merchant_notes.push(noteObj.note);
+        if (noteObj.note) {
+          // Check if this note already exists for this order
+          const existingNoteIndex = orderEntry!.merchant_notes.findIndex(
+            (n) => n.note === noteObj.note && n.order_id === order.order_id
+          );
+
+          if (existingNoteIndex === -1) {
+            // Add new note with order_id
+            orderEntry!.merchant_notes.push({
+              note: noteObj.note,
+              order_id: order.order_id,
+            });
+          }
         }
       });
     }
@@ -103,12 +117,11 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
         }
       }
 
-      // Check if this product is already in the list
+      // Check if this product with the same transaction_id already exists
       const existingProductIndex = orderEntry!.products.findIndex(
         (p) =>
-          p.product_identifier === product.product_identifier &&
-          p.title === product.title &&
-          p.personalisation === personalisation
+          p.transaction_id === transaction.transaction_id &&
+          p.order_id === order.order_id
       );
 
       if (existingProductIndex >= 0) {
@@ -121,6 +134,8 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
           title: product.title,
           quantity: quantity,
           personalisation: personalisation || undefined,
+          transaction_id: transaction.transaction_id,
+          order_id: order.order_id,
         });
       }
     });
