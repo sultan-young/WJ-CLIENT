@@ -7,6 +7,7 @@ import {
   useNavigate,
   useLocation,
   Outlet,
+  Navigate,
 } from "react-router-dom";
 import { Layout, Menu, Slider, Spin, theme } from "antd";
 import ProductList from "./pages/ProductList";
@@ -148,10 +149,11 @@ function App() {
     <PreloadDataProvider>
       <Router>
         <Routes>
+          <Route path="" element={<Navigate to="/wj/productPool" replace />} />
           <Route path="/login/admin" element={<AdminLogin />} />
           <Route path="/login/supplier" element={<SupplierLogin />} />
           <Route path="/unauthorized" element={<Unauthorized />}></Route>
-          <Route path="/v1" element={<AppLayout />}>
+          <Route path="/wj" element={<AppLayout />}>
             <Route path="productPool" element={<ProductList />} />
             <Route path="add-product" element={<ProductForm />} />
             <Route path="orderList" element={<OrderList />} />

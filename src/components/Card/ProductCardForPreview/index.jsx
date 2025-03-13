@@ -7,11 +7,17 @@ import {
   Tooltip,
   InputNumber,
   message,
+  Space,
 } from "antd";
 import styled from "styled-components";
 import { useAuth } from "../../../context/AuthContext"; // 假设有权限上下文
 import "./styles.css";
-import { ExclamationCircleOutlined, FormOutlined } from "@ant-design/icons";
+import {
+  ExclamationCircleOutlined,
+  FormOutlined,
+  MinusOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { useMemo, useState } from "react";
 import { updateProduct } from "../../../services/productService";
 
@@ -76,46 +82,26 @@ const ProductCardForPreview = ({
       actions={
         isAdmin
           ? [
-              <Button type="link" onClick={() => onUpdate(product)}>
+              <Button size="small" type="link" onClick={() => onUpdate(product)}>
                 编辑
               </Button>,
-              <Popconfirm
+              <Button size="small" type="link" onClick={() => onUpdate(product)}>
+                复制变体
+              </Button>,
+                <Popconfirm
                 title="确定要删除这个商品吗？"
                 icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
                 onConfirm={() => onDelete(product.id)}
                 okText="确定"
                 cancelText="取消"
               >
-                <Button type="link" danger>
+                <Button size="small" type="link" danger>
                   删除
                 </Button>
               </Popconfirm>,
             ]
           : []
       }
-      // extra={
-      //   isAdmin && (
-      //     <div className="card-actions">
-      //       <Button
-      //         type="link"
-      //         onClick={() => onUpdate(product)}
-      //       >
-      //         编辑
-      //       </Button>
-      //       <Popconfirm
-      //         title="确定要删除这个商品吗？"
-      //         icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
-      //         onConfirm={() => onDelete(product.id)}
-      //         okText="确定"
-      //         cancelText="取消"
-      //       >
-      //         <Button type="link" danger>
-      //           删除
-      //         </Button>
-      //       </Popconfirm>
-      //     </div>
-      //   )
-      // }
       className="product-card"
     >
       <Meta
@@ -151,17 +137,33 @@ const ProductCardForPreview = ({
                   console.error("更新库存失败:", error);
                 }
               }}
+              onCancel={() => {
+                setStockCount(product.stock);
+              }}
               okText="确定"
               cancelText="取消"
               description={
-                <InputNumber
-                  min={1}
-                  defaultValue={stockCount}
-                  onChange={(v) => {
-                    setStockCount(v);
-                  }}
-                  changeOnWheel
-                />
+                <Space.Compact>
+                  <Button
+                    disabled={!product.stock}
+                    onClick={() => setStockCount(stockCount - 1)}
+                    icon={<MinusOutlined />}
+                  />
+                  <InputNumber
+                    min={1}
+                    value={stockCount}
+                    style={{ width: "40px" }}
+                    controls={false}
+                    onChange={(v) => {
+                      setStockCount(v);
+                    }}
+                    changeOnWheel
+                  />
+                  <Button
+                    onClick={() => setStockCount(stockCount + 1)}
+                    icon={<PlusOutlined />}
+                  />
+                </Space.Compact>
               }
             >
               <FormOutlined
