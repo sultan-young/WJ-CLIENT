@@ -28,6 +28,7 @@ import {
   deleteProductImage,
   getProductCategoryList,
   getUploadProductImageSign,
+  updateProduct,
 } from "../../services/productService";
 import {
   calculateGrossProfit,
@@ -111,7 +112,7 @@ const ProductForm = forwardRef((props, ref) => {
   const [inputTag, setInputTag] = useState("");
   const [suppliers, setSuppliers] = useState([]);
   // 货架列表
-  const [shelfList, setCategoryList] = useState([]);
+  const [productCategoryList, setProductCategoryList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [imageUrlList, setImageUrlList] = useState([]);
   const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
@@ -149,8 +150,9 @@ const ProductForm = forwardRef((props, ref) => {
 
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
-    submit: async () => {
-      await handleSubmit();
+    // create 创建 update 更新
+    submit: async (mode = 'create') => {
+      await handleSubmit(mode);
     },
     reset: () => form.resetFields(),
     validateFields: async () => {
@@ -165,7 +167,7 @@ const ProductForm = forwardRef((props, ref) => {
     initializeForm();
     loadSuppliers();
     loadCategoryList();
-  }, []);
+  }, [props.initialValues]);
 
   // 初始化表单值
   const initializeForm = () => {
@@ -184,6 +186,8 @@ const ProductForm = forwardRef((props, ref) => {
       setFileList(images);
       setImageUrlList(images);
       autoCalculateProfit();
+    } else {
+      resetAll()
     }
   };
 
@@ -206,7 +210,7 @@ const ProductForm = forwardRef((props, ref) => {
   const loadCategoryList = async () => {
     try {
       const res = await getProductCategoryList();
-      setCategoryList(
+      setProductCategoryList(
         res.map((item) => ({
           label: `${item.value}  (${item.label})`,
           value: item.value,
@@ -245,12 +249,17 @@ const ProductForm = forwardRef((props, ref) => {
   };
 
   // 提交处理
-  const handleSubmit = async () => {
+  const handleSubmit = async (mode = 'create') => {
     await form.validateFields();
     try {
       setLoading(true);
       const productData = formatSubmitData(form.getFieldValue());
-      await createProduct(productData);
+      if (mode === 'create' || mode === 'quickCopy') {
+        await createProduct(productData);
+      }
+      if (mode === 'update') {
+        await updateProduct(productData);
+      }
       resetAll();
       onSubmitSuccess?.();
       // if (!initialValues) form.resetFields();
@@ -459,7 +468,7 @@ const ProductForm = forwardRef((props, ref) => {
           name="category"
           rules={[{ required: true, message: "请选择所属货架" }]}
         >
-          <Select style={{ width: 120 }} options={shelfList} />
+          <Select style={{ width: 200 }} options={productCategoryList} />
         </Form.Item>
         {/* 供应商选择（仅管理员可见） */}
         <Form.Item
@@ -481,7 +490,7 @@ const ProductForm = forwardRef((props, ref) => {
           <Form.Item
             name="hasVariant"
             label="是否有变体"
-            tooltip="如果选中有变体，则需要输入一个编号，此编号将被追加到sku后，例如A-0001-N1"
+            tooltip="如果选中有变体，则需要输入一个编号，此编号将被追加到sku后，例如A-0001-N1。N1为自定义信息，例如此处的N1代表制作为项链，链条款式为N1"
           >
             <Radio.Group>
               <Radio value={0}> 无变体 </Radio>
@@ -492,13 +501,13 @@ const ProductForm = forwardRef((props, ref) => {
         <Col>
           {hasVariant ? (
             <Form.Item
-              label=" "
+              label="变体编号"
               rules={[
                 { required: true, message: "选中变体时候，必须输入编号" },
               ]}
               name="variantSerial"
             >
-              <Input placeholder="请输入变体编号，此编号将被追加到sku后，例如A-0001-N1" />
+              <Input placeholder="请输入变体编号，此编号将被追加到sku后，例如A-0001-N1。" />
             </Form.Item>
           ) : (
             <></>

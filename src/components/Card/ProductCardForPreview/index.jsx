@@ -35,6 +35,7 @@ const ProductCardForPreview = ({
   product,
   onDelete,
   onUpdate,
+  onCopy,
   onSuccessCb,
   isSingleShow,
 }) => {
@@ -82,13 +83,21 @@ const ProductCardForPreview = ({
       actions={
         isAdmin
           ? [
-              <Button size="small" type="link" onClick={() => onUpdate(product)}>
+              <Button
+                size="small"
+                type="link"
+                onClick={() => onUpdate(product)}
+              >
                 编辑
               </Button>,
-              <Button size="small" type="link" onClick={() => onUpdate(product)}>
-                复制变体
+              <Button
+                size="small"
+                type="link"
+                onClick={() => onCopy(product)}
+              >
+                快速复制
               </Button>,
-                <Popconfirm
+              <Popconfirm
                 title="确定要删除这个商品吗？"
                 icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
                 onConfirm={() => onDelete(product.id)}

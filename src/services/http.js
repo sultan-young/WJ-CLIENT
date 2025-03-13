@@ -28,7 +28,7 @@ http.interceptors.response.use(
   },
   (error) => {
     const errorMessage =
-      error.response?.message || "请求失败，请稍后重试";
+      error.response?.message || error.response?.data?.message || "请求失败，请稍后重试";
     message.error(errorMessage);
     return Promise.reject(error);
   }
