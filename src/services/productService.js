@@ -63,3 +63,12 @@ export const exportImage = async (imageUrls = []) => {
     result
   };
 };
+
+
+export const getProductCategoryList = async () => {
+  try {
+    const data = await http.post("/products/category/list");
+    return data;
+  } catch (error) {}
+  // 模拟供应商数据
+};

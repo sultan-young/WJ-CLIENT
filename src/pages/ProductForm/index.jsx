@@ -26,9 +26,9 @@ import axios from "axios";
 import {
   createProduct,
   deleteProductImage,
+  getProductCategoryList,
   getUploadProductImageSign,
 } from "../../services/productService";
-import { getShelfList } from "../../services/shelfList";
 import {
   calculateGrossProfit,
   calculateNetProfit,
@@ -111,7 +111,7 @@ const ProductForm = forwardRef((props, ref) => {
   const [inputTag, setInputTag] = useState("");
   const [suppliers, setSuppliers] = useState([]);
   // 货架列表
-  const [shelfList, setShelfList] = useState([]);
+  const [shelfList, setCategoryList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [imageUrlList, setImageUrlList] = useState([]);
   const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
@@ -164,7 +164,7 @@ const ProductForm = forwardRef((props, ref) => {
   useEffect(() => {
     initializeForm();
     loadSuppliers();
-    loadShelfList();
+    loadCategoryList();
   }, []);
 
   // 初始化表单值
@@ -203,10 +203,10 @@ const ProductForm = forwardRef((props, ref) => {
   };
 
   // 加载货架数据
-  const loadShelfList = async () => {
+  const loadCategoryList = async () => {
     try {
-      const res = await getShelfList();
-      setShelfList(
+      const res = await getProductCategoryList();
+      setCategoryList(
         res.map((item) => ({
           label: `${item.value}  (${item.label})`,
           value: item.value,
@@ -231,7 +231,7 @@ const ProductForm = forwardRef((props, ref) => {
     tags,
     images: imageUrlList,
     suppliers: values.suppliers || [],
-    shelf: values.shelf,
+    category: values.category,
   });
 
   const resetAll = async () => {
@@ -456,7 +456,7 @@ const ProductForm = forwardRef((props, ref) => {
         </Form.Item>
         <Form.Item
           label="所属分类"
-          name="shelf"
+          name="category"
           rules={[{ required: true, message: "请选择所属货架" }]}
         >
           <Select style={{ width: 120 }} options={shelfList} />

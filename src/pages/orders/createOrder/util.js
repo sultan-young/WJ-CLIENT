@@ -4,7 +4,7 @@ export let mockList = [
      */
     {
         sku: "B_0000",
-        shelf: "B",
+        category: "B",
         index: "0000",
         suppliers: [{
             $oid: "67cbfa833c83898c06163d75",
@@ -35,7 +35,7 @@ export let mockList = [
      */
     {
         sku: "B_0000",
-        shelf: "B",
+        category: "B",
         index: "0000",
         suppliers: [{
             $oid: "67cbfa833c83898c06163d75",
@@ -66,7 +66,7 @@ export let mockList = [
      */
     {
         sku: "B_0002",
-        shelf: "B",
+        category: "B",
         index: "0002",
         suppliers: [{
             $oid: "67cc4f5ae186963e50d7b064",
@@ -94,7 +94,7 @@ export let mockList = [
     },
     {
         sku: "B_0000",
-        shelf: "B",
+        category: "B",
         index: "0000",
         suppliers: [{
             $oid: "67cbfa833c83898c06163d75",
@@ -125,7 +125,7 @@ export let mockList = [
      */
     {
         sku: "B_0000",
-        shelf: "B",
+        category: "B",
         index: "0000",
         suppliers: [{
             $oid: "67cbfa833c83898c06163d75",
@@ -156,7 +156,7 @@ export let mockList = [
      */
     {
         sku: "B_0002",
-        shelf: "B",
+        category: "B",
         index: "0002",
         suppliers: [{
             $oid: "67cc4f5ae186963e50d7b064",
