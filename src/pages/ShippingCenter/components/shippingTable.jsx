@@ -27,7 +27,7 @@ const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
 
   const edit = (record) => {
     form.setFieldsValue({
-      notes: "", // 初始化备注字段
+      option: "", // 初始化备注字段
       ...record, // 填充其他字段
     });
     setEditingKey(record.buyer_id);
@@ -88,10 +88,25 @@ const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
         )),
     },
     {
-      title: "备注",
-      dataIndex: "notes",
+      title: "选项",
+      dataIndex: "option",
       editable: true, // 标记为可编辑列
       width: 150,
+    },
+    {
+      title: "个性化定制",
+      dataIndex: "personalisation",
+      width: 150,
+      render: (text, record) =>
+        record.products.map((product, idx) => (
+          <div key={idx}>{product.personalisation}</div>
+        )),
+    },
+    {
+      title: "商家备注",
+      dataIndex: "merchant_notes",
+      width: 150,
+      render: (text) => text?.join(","),
     },
     {
       title: "操作",

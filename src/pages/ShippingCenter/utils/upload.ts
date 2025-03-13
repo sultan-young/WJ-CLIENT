@@ -23,6 +23,7 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
       first_line: string;
       second_line: string;
       products: ProductInfo[];
+      merchant_notes: string[];
     }
   >();
 
@@ -54,9 +55,22 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
         first_line: to_address.first_line,
         second_line: to_address.second_line || "",
         products: [],
+        merchant_notes: [],
       };
 
       orderMap.set(addressKey, orderEntry);
+    }
+
+    // Add merchant notes if they exist
+    if (order.notes && order.notes.private_order_notes) {
+      order.notes.private_order_notes.forEach((noteObj) => {
+        if (
+          noteObj.note &&
+          !orderEntry!.merchant_notes.includes(noteObj.note)
+        ) {
+          orderEntry!.merchant_notes.push(noteObj.note);
+        }
+      });
     }
 
     // Add all products from this order
@@ -65,6 +79,7 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
 
       // Calculate quantity
       let quantity = transaction.quantity || 1;
+      let personalisation = "";
 
       // Check if there's a "Quantity" property in variations
       if (transaction.variations) {
@@ -78,13 +93,22 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
             Number.parseInt(quantityVariation.value, 10) || 1;
           quantity = quantity * variationQuantity;
         }
+        // Check for Personalisation
+        const personalisationVariation = transaction.variations.find(
+          (v) => v.property === "Personalisation"
+        );
+
+        if (personalisationVariation) {
+          personalisation = personalisationVariation.value || "";
+        }
       }
 
       // Check if this product is already in the list
       const existingProductIndex = orderEntry!.products.findIndex(
         (p) =>
           p.product_identifier === product.product_identifier &&
-          p.title === product.title
+          p.title === product.title &&
+          p.personalisation === personalisation
       );
 
       if (existingProductIndex >= 0) {
@@ -96,6 +120,7 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
           product_identifier: product.product_identifier,
           title: product.title,
           quantity: quantity,
+          personalisation: personalisation || undefined,
         });
       }
     });
@@ -118,6 +143,7 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
         .join(", "),
       title: entry.products.map((p) => p.title).join(", "),
       products: entry.products,
+      merchant_notes: entry.merchant_notes,
     });
   });
 
