@@ -237,7 +237,7 @@ const ExportOrder = forwardRef(
       }
     };
 
-    const priceList = orderList?.map((a) => a.count * a.price);
+    const priceList = orderList?.map((a) => a.count * a.costPriceRMB);
     const totalPrice = priceList.reduce((accumulator, currentValue) => {
       return accumulator + currentValue;
     }, 0);
@@ -249,35 +249,32 @@ const ExportOrder = forwardRef(
             导出为图片
           </Button>
           <Button onClick={downloadAsPDF} type="link">
-            导图为pdf
+            导出为pdf
           </Button>
         </div>
         <div ref={cardRef}>
           <div className="style-1" ref={contentRef}>
             <div className="order-card">
               <div className="order-card-inner">
-                <div className="order-header">
-                  <h1 className="order-title">
-                    {suppliersData?.name}(ORD20240311-8765)
-                  </h1>
-                </div>
-
+                <div className="order-item-label">基本信息</div>
                 <div className="order-content">
-                  <div className="order-column">
-                    <div className="order-item important">
-                      <div className="order-item-label">发货日期</div>
-                      <div className="order-item-value">
-                        {dayjs(shippingDate).format("YYYY-MM-DD")}
-                      </div>
+                  <div className="order-item important">
+                    <div className="order-item-label">供应商名称:</div>
+                    <div className="order-item-value">
+                      {suppliersData?.name}
+                    </div>
+                  </div>
+                  <div className="order-item important">
+                    <div className="order-item-label">下单日期:</div>
+                    <div className="order-item-value">
+                      {dayjs().format("YYYY-MM-DD")}
                     </div>
                   </div>
 
                   {isAdmin && (
-                    <div className="order-column">
-                      <div className="order-item important">
-                        <div className="order-item-label">订单总额</div>
-                        <div className="order-item-value">{totalPrice}</div>
-                      </div>
+                    <div className="order-item important">
+                      <div className="order-item-label">订单总额:</div>
+                      <div className="order-item-value">{totalPrice}</div>
                     </div>
                   )}
                 </div>
@@ -314,15 +311,6 @@ const ExportOrder = forwardRef(
                               style={{ margin: "6px 0", textAlign: "center" }}
                             >{`${item.nameCn}(${item.sku})`}</span>
 
-                            {/* <span
-                              className="product-card-desc"
-                              style={{ margin: 0 }}
-                            >
-                              订购数量：
-                              <span className="product-card-count">
-                                {item.count}
-                              </span>
-                            </span> */}
                             {isAdmin && (
                               <span
                                 className="product-card-desc"
@@ -335,8 +323,8 @@ const ExportOrder = forwardRef(
                               >
                                 总额：
                                 <span className="product-card-price">
-                                  {`${item.price}*${item.count}=${
-                                    item.price * item.count
+                                  {`${item.costPriceRMB}*${item.count}=${
+                                    item.costPriceRMB * item.count
                                   }`}
                                 </span>
                               </span>
@@ -353,7 +341,8 @@ const ExportOrder = forwardRef(
                           color: "#000",
                         }}
                       >
-                        本次应支付：{priceList?.join("+")}=
+                        本次应支付：
+                        {orderList?.length > 1 && `${priceList?.join("+")}=`}
                         <span style={{ color: "#fb914d", fontSize: "18px" }}>
                           {totalPrice}
                         </span>

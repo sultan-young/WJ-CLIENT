@@ -11,7 +11,10 @@ import "./index.css";
 import ExportForm from "./exportOrder";
 import Step1WithSupplier from "./Step1WithSupplier";
 import Step2WithOrder from "./Step2WithOrder";
-import { createSupplierOrder, updateSupplierOrder } from "../../../services/supplierOrder";
+import {
+  createSupplierOrder,
+  updateSupplierOrder,
+} from "../../../services/supplierOrder";
 
 const PAGE_MODE = {
   CREATE: 1,
@@ -19,7 +22,7 @@ const PAGE_MODE = {
   PREVIEW: 3,
 };
 
-const CreateOrder = forwardRef(({afterFinishAction}, ref) => {
+const CreateOrder = forwardRef(({ afterFinishAction }, ref) => {
   const [createOrderDrawerVisible, setCreateOrderDrawerVisible] =
     useState(false);
   const [supplierId, setSupplierId] = useState("");
@@ -37,11 +40,17 @@ const CreateOrder = forwardRef(({afterFinishAction}, ref) => {
 
   useEffect(() => {
     if (pageMode === PAGE_MODE.EDIT) {
-      selectSupplierFormRef.current?.setFieldValue('supplier', pageInitialData?.supplierId)
+      selectSupplierFormRef.current?.setFieldValue(
+        "supplier",
+        pageInitialData?.supplierId
+      );
     }
 
     if (pageMode === PAGE_MODE.PREVIEW) {
-      selectSupplierFormRef.current?.setFieldValue('supplier', pageInitialData?.supplierId)
+      selectSupplierFormRef.current?.setFieldValue(
+        "supplier",
+        pageInitialData?.supplierId
+      );
     }
   }, [pageMode, createOrderDrawerVisible, pageInitialData?.supplierId]);
 
@@ -49,8 +58,8 @@ const CreateOrder = forwardRef(({afterFinishAction}, ref) => {
     setCurrentStep(0);
     setSupplierId("");
     setShippingDate("");
-    setPageInitialData(null)
-    setPageMode(PAGE_MODE.CREATE)
+    setPageInitialData(null);
+    setPageMode(PAGE_MODE.CREATE);
     selectSupplierFormRef.current &&
       selectSupplierFormRef.current.resetFields();
     selectOrderFormRef.current?.formData &&
@@ -66,7 +75,7 @@ const CreateOrder = forwardRef(({afterFinishAction}, ref) => {
     // 1 新增模式 2为编辑模式
     open: async (mode = 1, data) => {
       setCreateOrderDrawerVisible(true);
-      setPageInitialData(data)
+      setPageInitialData(data);
       setPageMode(mode);
     },
   }));
@@ -83,11 +92,11 @@ const CreateOrder = forwardRef(({afterFinishAction}, ref) => {
     }
     // 选择商品阶段
     if (currentStep === 1) {
-      await selectOrderFormRef.current.formData.validateFields();
-      setShippingDate(
-        selectOrderFormRef.current.formData.getFieldValue().shippingDate
-      );
-      
+      // await selectOrderFormRef.current.formData.validateFields();
+      // setShippingDate(
+      //   selectOrderFormRef.current.formData.getFieldValue().shippingDate
+      // );
+
       // 未选中
       if (!selectOrderFormRef.current.verifySelectStatus()) {
         message.error("至少选中一个产品");
@@ -101,7 +110,7 @@ const CreateOrder = forwardRef(({afterFinishAction}, ref) => {
 
     if (currentStep === 2) {
       await submitOrder();
-      afterFinishAction()
+      afterFinishAction();
     }
   };
 
@@ -120,15 +129,15 @@ const CreateOrder = forwardRef(({afterFinishAction}, ref) => {
     if (pageMode === PAGE_MODE.CREATE) {
       await createSupplierOrder(submitData);
       message.success("创建成功");
-    } 
+    }
     if (pageMode === PAGE_MODE.EDIT) {
       await updateSupplierOrder({
         ...submitData,
         id: pageInitialData.id,
-      })
+      });
       message.success("编辑成功");
     }
-    setCreateOrderDrawerVisible(false)
+    setCreateOrderDrawerVisible(false);
   };
 
   return (
@@ -167,7 +176,11 @@ const CreateOrder = forwardRef(({afterFinishAction}, ref) => {
       </div>
 
       <div style={{ display: currentStep === 1 ? "block" : "none" }}>
-        <Step2WithOrder ref={selectOrderFormRef} defaultSelectOrder={pageInitialData?.orderList} defaultSelectShipDate={pageInitialData?.shippingDate} supplierId={supplierId} />
+        <Step2WithOrder
+          ref={selectOrderFormRef}
+          defaultSelectOrder={pageInitialData?.orderList}
+          supplierId={supplierId}
+        />
       </div>
       <div style={{ display: currentStep === 2 ? "block" : "none" }}>
         <ExportForm
