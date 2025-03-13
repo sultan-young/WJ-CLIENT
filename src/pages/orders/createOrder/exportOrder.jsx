@@ -26,6 +26,22 @@ const ExportOrder = forwardRef(
     const contentRef = useRef(null);
     const cardRef = useRef(null);
     const [isExporting, setIsExporting] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // 检测是否为移动设备
+    useEffect(() => {
+      const checkMobile = () => {
+        //一张a4纸的宽度
+        setIsMobile(window.innerWidth < 595); // 根据实际情况调整断点
+      };
+
+      checkMobile();
+      window.addEventListener("resize", checkMobile);
+
+      return () => {
+        window.removeEventListener("resize", checkMobile);
+      };
+    }, []);
 
     // 暴露方法给父组件
     useImperativeHandle(ref, () => ({
@@ -62,6 +78,158 @@ const ExportOrder = forwardRef(
       preloadImages();
     }, []);
 
+    // 创建专门用于导出的内容（确保每行至少4个商品）
+    const createExportContent = async (imageUrlBase65Map) => {
+      if (!contentRef.current) return null;
+
+      // 判断是否需要创建特殊导出布局
+      const needsSpecialLayout = isMobile;
+
+      if (!needsSpecialLayout) {
+        // 如果不需要特殊布局，直接克隆原始内容
+        const clone = contentRef.current.cloneNode(true);
+
+        // 处理图片
+        const clonedImages = Array.from(clone.querySelectorAll("img"));
+        clonedImages.forEach((img) => {
+          img.src = imageUrlBase65Map[img.src] || img.src;
+        });
+
+        // 修复计数标签在导出时的样式问题
+        const countLabels = Array.from(
+          clone.querySelectorAll(".product-card-count")
+        );
+        countLabels.forEach((label) => {
+          label.style.paddingBottom = "10px";
+          label.style.fontSize = "14px";
+        });
+
+        return clone;
+      }
+
+      // 创建特殊导出布局
+      const exportContainer = document.createElement("div");
+      exportContainer.className = "style-1";
+
+      // 复制原始内容的结构，但修改产品网格
+      const originalContent = contentRef.current;
+
+      // 创建订单卡片
+      const orderCard = document.createElement("div");
+      orderCard.className = "order-card";
+
+      const orderCardInner = document.createElement("div");
+      orderCardInner.className = "order-card-inner";
+
+      // 复制基本信息部分
+      const basicInfoSection = originalContent.querySelector(
+        ".order-card-inner > div:first-child"
+      );
+      if (basicInfoSection) {
+        orderCardInner.appendChild(basicInfoSection.cloneNode(true));
+      }
+
+      // 复制订单内容部分
+      const orderContentSection =
+        originalContent.querySelector(".order-content");
+      if (orderContentSection) {
+        orderCardInner.appendChild(orderContentSection.cloneNode(true));
+      }
+
+      // 创建订单详情部分，但使用4列布局
+      const orderNotesOriginal = originalContent.querySelector(".order-notes");
+      if (orderNotesOriginal) {
+        const orderNotes = orderNotesOriginal.cloneNode(false);
+        orderNotes.className = "order-notes";
+
+        // 复制标题
+        const orderNotesLabel =
+          orderNotesOriginal.querySelector(".order-item-label");
+        if (orderNotesLabel) {
+          orderNotes.appendChild(orderNotesLabel.cloneNode(true));
+        }
+
+        // 创建内容容器
+        const orderNotesContent = document.createElement("div");
+        orderNotesContent.className = "order-notes-content";
+
+        // 创建新的Row，强制使用4列布局
+        const newRow = document.createElement("div");
+        newRow.style.display = "grid";
+        newRow.style.gridTemplateColumns = "repeat(4, 1fr)";
+        newRow.style.gap = "16px";
+
+        // 复制所有产品卡片，但调整布局
+        const productCards = Array.from(
+          originalContent.querySelectorAll(".product-card")
+        );
+        productCards.forEach((card) => {
+          const colDiv = document.createElement("div");
+          colDiv.style.marginBottom = "16px";
+          colDiv.style.paddingBottom = "16px";
+
+          const clonedCard = card.cloneNode(true);
+          // 处理卡片中的图片
+          const cardImage = clonedCard.querySelector("img");
+          if (cardImage) {
+            cardImage.src = imageUrlBase65Map[cardImage.src] || cardImage.src;
+          }
+
+          // 修复计数标签在导出时的样式问题
+          const countLabel = clonedCard.querySelector(".product-card-count");
+          if (countLabel) {
+            countLabel.style.paddingBottom = "6px";
+            countLabel.style.fontSize = "14px";
+          }
+
+          colDiv.appendChild(clonedCard);
+          newRow.appendChild(colDiv);
+        });
+
+        orderNotesContent.appendChild(newRow);
+
+        // 复制总价信息（如果是管理员）
+        if (isAdmin) {
+          const totalPriceInfo = orderNotesOriginal.querySelector(
+            ".order-notes-content > div:last-child"
+          );
+          if (totalPriceInfo) {
+            orderNotesContent.appendChild(totalPriceInfo.cloneNode(true));
+          }
+        }
+
+        orderNotes.appendChild(orderNotesContent);
+        orderCardInner.appendChild(orderNotes);
+      }
+
+      // 复制订单备注部分
+      const orderRemarks = originalContent.querySelector(
+        ".order-notes:nth-of-type(2)"
+      );
+      if (orderRemarks) {
+        orderCardInner.appendChild(orderRemarks.cloneNode(true));
+      } else {
+        // 备用方法：查找所有order-notes，获取最后一个
+        const allOrderNotes = originalContent.querySelectorAll(".order-notes");
+        if (allOrderNotes.length > 1) {
+          orderCardInner.appendChild(
+            allOrderNotes[allOrderNotes.length - 1].cloneNode(true)
+          );
+        }
+      }
+
+      // 复制水印
+      const watermark = originalContent.querySelector(".company-watermark");
+      if (watermark) {
+        orderCardInner.appendChild(watermark.cloneNode(true));
+      }
+
+      orderCard.appendChild(orderCardInner);
+      exportContainer.appendChild(orderCard);
+
+      return exportContainer;
+    };
+
     // 完全重写的导出函数 - 使用DOM克隆和绝对定位确保捕获全部内容
     const captureEntireContent = async () => {
       if (!cardRef.current || !contentRef.current) return null;
@@ -86,32 +254,22 @@ const ExportOrder = forwardRef(
         tempContainer.style.position = "absolute";
         tempContainer.style.left = "-9999px";
         tempContainer.style.top = "0";
-        tempContainer.style.width = `${contentRef.current.offsetWidth}px`;
+        tempContainer.style.width = isMobile
+          ? "695px"
+          : `${contentRef.current.offsetWidth}px`;
         document.body.appendChild(tempContainer);
 
-        // 2. 克隆要导出的内容
-        const clone = contentRef.current.cloneNode(true);
+        // 2. 创建导出内容（根据屏幕大小决定是否使用特殊布局）
+        const exportContent = await createExportContent(imageUrlBase65Map);
+        if (!exportContent) {
+          throw new Error("Failed to create export content");
+        }
 
-        // 3. 设置克隆元素的样式
-        clone.style.width = `${contentRef.current.offsetWidth}px`;
-        clone.style.backgroundColor = "white";
-        clone.style.position = "static";
-        clone.style.transform = "none";
-        clone.style.margin = "0";
-        clone.style.padding = contentRef.current.style.padding || "24px";
+        // 3. 将导出内容添加到临时容器
+        tempContainer.appendChild(exportContent);
 
-        // 4. 处理克隆元素中的所有图片
-        const clonedImages = Array.from(clone.querySelectorAll("img"));
-        clonedImages.forEach((img) => {
-          img.src = imageUrlBase65Map[img.src];
-          img.style.maxWidth = "none";
-          img.style.maxHeight = "none";
-        });
-
-        // 5. 将克隆元素添加到临时容器
-        tempContainer.appendChild(clone);
-
-        // 6. 等待所有图片加载完成
+        // 4. 等待所有图片加载完成
+        const clonedImages = Array.from(exportContent.querySelectorAll("img"));
         await Promise.all(
           clonedImages.map((img) => {
             if (img.complete) return Promise.resolve();
@@ -126,8 +284,8 @@ const ExportOrder = forwardRef(
           })
         );
 
-        // 7. 使用html2canvas捕获克隆元素
-        const canvas = await html2canvas(clone, {
+        // 5. 使用html2canvas捕获克隆元素
+        const canvas = await html2canvas(exportContent, {
           useCORS: true,
           allowTaint: true,
           backgroundColor: "white",
@@ -143,7 +301,7 @@ const ExportOrder = forwardRef(
           },
         });
 
-        // 8. 清理临时元素
+        // 6. 清理临时元素
         document.body.removeChild(tempContainer);
 
         return canvas;
@@ -294,22 +452,36 @@ const ExportOrder = forwardRef(
                           style={{ marginBottom: 16, paddingBottom: 16 }}
                         >
                           <div className="product-card">
-                            <img
-                              key={item.images[0]?.picturebedId}
+                            <div
                               style={{
-                                objectFit: "cover",
                                 height: "150px",
-                                minWidth: "100%",
+                                width: "100%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                overflow: "hidden",
                               }}
-                              src={item.images[0]?.url}
-                            />
+                            >
+                              <img
+                                key={item.images[0]?.picturebedId}
+                                style={{
+                                  objectFit: "cover", // 保持原比例
+                                  maxWidth: "100%",
+                                  // maxHeight: "100%",
+                                  width: "auto",
+                                  // height: "100%",
+                                }}
+                                src={item.images[0]?.url || "/placeholder.svg"}
+                              />
+                            </div>
+
                             <div className="product-card-count">
                               x{item.count}
                             </div>
                             <span
                               className="product-card-title"
                               style={{ margin: "6px 0", textAlign: "center" }}
-                            >{`${item.nameCn}(${item.sku})`}</span>
+                            >{`${item.sku}(${item.nameCn})`}</span>
 
                             {isAdmin && (
                               <span
@@ -339,6 +511,7 @@ const ExportOrder = forwardRef(
                           fontSize: "18px",
                           fontWeight: 600,
                           color: "#000",
+                          wordWrap: "break-word",
                         }}
                       >
                         本次应支付：
