@@ -115,8 +115,7 @@ const ProductCardForPreview = ({
     >
       <Meta
         // avatar={<Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />}
-        title={`${product.nameCn}(${product.sku})`}
-        // description={product.notes}
+        title={`${product.nameCn.length > 6 ? product.nameCn.slice(0, 6) : product.nameCn}(${product.sku})`}
       />
       {/* <Image.PreviewGroup width={200} items={imageUrls}>
         <Image width={200} src={imageUrls[0]} wrapperStyle={{width: "100%"}} />

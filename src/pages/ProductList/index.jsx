@@ -41,7 +41,7 @@ const ProductList = () => {
     }
     if (createMode === 'quickCopy') {
       return {
-        title: `以${selectedProduct.sku}为模板快速创建`,
+        title: `以[${selectedProduct.nameCn}]为模板快速创建`,
         submitBtn: '创建'
       }
     }
