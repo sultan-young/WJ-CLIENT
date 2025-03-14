@@ -19,8 +19,11 @@ import {
   Collapse,
   Radio,
 } from "antd";
-import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
-import { getSuppliers } from "../../../services/supplierService";
+import {
+  UploadOutlined,
+  PlusOutlined,
+  MinusCircleOutlined,
+} from "@ant-design/icons";
 import "./styles.css";
 import axios from "axios";
 import {
@@ -36,8 +39,9 @@ import {
   calculateProductProfitRMB,
   rmb2usd,
 } from "../../../utils/calculateProfit";
+import { usePreloadData } from "../../../context/AppContext";
 
-let imageUrlList = []
+let imageUrlList = [];
 
 const renderDiscountPanelItems = (price = 0) => {
   let _price = (Number(price) || 0).toFixed(2);
@@ -88,10 +92,14 @@ const renderDiscountPanelItems = (price = 0) => {
 };
 
 const ProductForm = forwardRef((props, ref) => {
+  const { suppliersOption } = usePreloadData();
+
   // 基础配置
   const [form] = Form.useForm();
   // 监听 Radio 值变化
   const hasVariant = Form.useWatch("hasVariant", form);
+  // 监听价格是否关联供应商
+  const isPriceLinkSuppliers = Form.useWatch("priceLinkSuppliers", form);
 
   // 当隐藏输入框时，清除字段值和校验信息
   useEffect(() => {
@@ -112,7 +120,6 @@ const ProductForm = forwardRef((props, ref) => {
   // TODO: 这里可优化，tags还未加入到form中
   const [tags, setTags] = useState([]);
   const [inputTag, setInputTag] = useState("");
-  const [suppliers, setSuppliers] = useState([]);
   // 货架列表
   const [productCategoryList, setProductCategoryList] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -133,8 +140,12 @@ const ProductForm = forwardRef((props, ref) => {
   };
 
   const autoCalculateProfit = () => {
-    const { costPriceRMB, shippingFeeRMB, salePriceUSD, saleShipPriceUSD } =
+    let { costPriceRMB, shippingFeeRMB, salePriceUSD, saleShipPriceUSD } =
       form.getFieldValue();
+      if (isPriceLinkSuppliers) {
+        const values = form.getFieldValue("costSuppliersLinkPricesRMB");
+        costPriceRMB = Math.min(...((values || []).map(item => item.price).filter(price => !!price)))
+      }
     if (costPriceRMB && shippingFeeRMB && salePriceUSD) {
       setProfitData({
         grossProfitMargin: calculateGrossProfit({
@@ -157,7 +168,7 @@ const ProductForm = forwardRef((props, ref) => {
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
     // create 创建 update 更新
-    submit: async (mode = 'create') => {
+    submit: async (mode = "create") => {
       await handleSubmit(mode);
     },
     reset: () => form.resetFields(),
@@ -171,7 +182,6 @@ const ProductForm = forwardRef((props, ref) => {
   // 初始化数据
   useEffect(() => {
     initializeForm();
-    loadSuppliers();
     loadCategoryList();
   }, [props.initialValues]);
 
@@ -180,8 +190,12 @@ const ProductForm = forwardRef((props, ref) => {
     if (initialValues) {
       const _values = {
         ...initialValues,
-        images: (initialValues.images || []).map(item => ({url: item.url, uid: item.uid, name: item.name}))
-      }
+        images: (initialValues.images || []).map((item) => ({
+          url: item.url,
+          uid: item.uid,
+          name: item.name,
+        })),
+      };
       form.setFieldsValue(_values);
       setTags(initialValues.tags || []);
       const images = (initialValues.images || []).map(
@@ -196,22 +210,7 @@ const ProductForm = forwardRef((props, ref) => {
       imageUrlList = images;
       autoCalculateProfit();
     } else {
-      resetAll()
-    }
-  };
-
-  // 加载供应商数据
-  const loadSuppliers = async () => {
-    try {
-      const res = await getSuppliers();
-      setSuppliers(
-        res.map((item) => ({
-          label: item.name,
-          value: item.id,
-        }))
-      );
-    } catch (error) {
-      console.error("加载供应商失败:", error);
+      resetAll();
     }
   };
 
@@ -251,21 +250,22 @@ const ProductForm = forwardRef((props, ref) => {
     setTags([]);
     setInputTag("");
     setLoading(false);
-    imageUrlList = []
+    imageUrlList = [];
     setSubmitBtnLoadings(false);
     form.resetFields();
   };
 
   // 提交处理
-  const handleSubmit = async (mode = 'create') => {
+  const handleSubmit = async (mode = "create") => {
+    console.log(form.getFieldsValue());
     await form.validateFields();
     try {
       setLoading(true);
       const productData = formatSubmitData(form.getFieldValue());
-      if (mode === 'create' || mode === 'quickCopy') {
+      if (mode === "create" || mode === "quickCopy") {
         await createProduct(productData);
       }
-      if (mode === 'update') {
+      if (mode === "update") {
         await updateProduct(productData);
       }
       resetAll();
@@ -316,7 +316,7 @@ const ProductForm = forwardRef((props, ref) => {
           uid: file.uid,
           name,
           size,
-        })
+        });
         onSuccess("Success");
         message.success("图片上传成功！");
       })
@@ -351,6 +351,32 @@ const ProductForm = forwardRef((props, ref) => {
     const newImageUrlList = imageUrlList.filter((item) => item.uid !== uid);
     imageUrlList = newImageUrlList;
   };
+  const onSelectSupplierChange = (value, option, v) => {
+    // 获取当前 formList 的值
+    const currentCostSuppliersLinkPricesRMB =
+      form.getFieldValue("costSuppliersLinkPricesRMB") || [];
+
+    // 1. 过滤掉已移除的 id
+    const remainingItems = currentCostSuppliersLinkPricesRMB.filter((item) =>
+      value.includes(item.id)
+    );
+
+    // 2. 添加新增的 id（去重处理）
+    const newIds = value.filter(
+      (id) => !currentCostSuppliersLinkPricesRMB.some((item) => item.id === id)
+    );
+    const newItems = [
+      ...remainingItems,
+      ...newIds.map((id) => ({
+        id,
+        price: "",
+        name: option.find((item) => item.value === id)?.label || "",
+      })),
+    ];
+
+    // 更新 formList 字段
+    form.setFieldsValue({ costSuppliersLinkPricesRMB: newItems });
+  };
 
   return (
     <Form
@@ -363,6 +389,7 @@ const ProductForm = forwardRef((props, ref) => {
         price: 0,
         shippingFeeRMB: 35,
         hasVariant: 0,
+        priceLinkSuppliers: 0,
       }}
     >
       {/* 商品名称 */}
@@ -380,51 +407,117 @@ const ProductForm = forwardRef((props, ref) => {
         label="英文名称"
         name="nameEn"
         tooltip="该名称会展示在制单的excel中"
-        rules={[{ required: true, message: "请输入中文名称" }]}
+        rules={[{ required: true, message: "请输入英文名称" }]}
       >
         <Input placeholder="该名称会展示在制单的excel中" />
       </Form.Item>
+
+      {/* 供应商选择（仅管理员可见） */}
+      <Row gutter={40}>
+        <Col>
+          <Form.Item
+            style={{ minWidth: "200px" }}
+            label="供应商"
+            name="suppliers"
+            rules={[{ required: true, message: "请至少选择一个供应商" }]}
+          >
+            <Select
+              mode="multiple"
+              onChange={onSelectSupplierChange}
+              placeholder="选择供应商"
+              options={suppliersOption}
+            />
+          </Form.Item>
+        </Col>
+        <Col>
+          <Form.Item
+            name="priceLinkSuppliers"
+            label="价格是否关联供应商"
+            tooltip="如果价格关联了供应商，则需要为每个供应商指定一个产品价格"
+          >
+            <Radio.Group>
+              <Radio value={0}> 不关联 </Radio>
+              <Radio value={1}> 关联 </Radio>
+            </Radio.Group>
+          </Form.Item>
+        </Col>
+      </Row>
 
       <Row>
         <Col span={12}>
           {/* 库存和价格 */}
           <Row gutter={4}>
-            <Col span={12}>
+            {!isPriceLinkSuppliers ? (
               <Form.Item
                 label="商品成本价(￥)"
                 name="costPriceRMB"
-                rules={[{ required: true, message: "请输入商品价格" }]}
+                rules={[{ required: true, message: "请输入商品进价（与供应商，手工艺人约定好的价格）" }]}
               >
                 <InputNumber min={0} precision={2} />
               </Form.Item>
-              <Form.Item
-                label="平台销售价格($)"
-                name="salePriceUSD"
-                tooltip="该数值用于自动计算商品的利润"
-                rules={[{ required: true, message: "请输入商品价格" }]}
-              >
-                <InputNumber min={0} precision={2} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="运费预估(￥)"
-                name="shippingFeeRMB"
-                tooltip="运到目的国所需的运费，该数值用于自动计算商品的利润"
-                rules={[{ required: true, message: "请输入运费" }]}
-              >
-                <InputNumber min={0} precision={2} />
-              </Form.Item>
+            ) : (
+              <Form.List name="costSuppliersLinkPricesRMB">
+                {(fields) => (
+                  <div className="linkPriceContainer">
+                    <div className="linkPriceContainer-title">各个供应商合作价(￥)</div>
+                    <div className="linkPriceContainer-wrap">
+                      {fields.map(({ key, name, ...restField }) => {
+                        // 获取当前项的 供应商名称
+                        const supplierName = form.getFieldValue([
+                          "costSuppliersLinkPricesRMB",
+                          name,
+                          "name",
+                        ]);
 
-              <Form.Item
-                label="平台商品运费($)"
-                name="saleShipPriceUSD"
-                tooltip="该数值用于自动计算商品的利润"
-                rules={[{ required: true, message: "请输入商品价格" }]}
-              >
-                <InputNumber min={0} precision={2} />
-              </Form.Item>
-            </Col>
+                        return (
+                          <Form.Item
+                            {...restField}
+                            key={key}
+                            name={[name, "price"]}
+                            label={`${supplierName}`}
+                            rules={[
+                              {
+                                required: true,
+                                message: `请输入${supplierName}的合作价`,
+                              },
+                            ]}
+                          >
+                            <InputNumber />
+                          </Form.Item>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </Form.List>
+            )}
+
+            <Form.Item
+              label="平台销售价格($)"
+              name="salePriceUSD"
+              tooltip="该数值用于自动计算商品的利润"
+              rules={[{ required: true, message: "请输入商品在平台的销售价格" }]}
+            >
+              <InputNumber min={0} precision={2} />
+            </Form.Item>
+
+            <Form.Item
+              label="运费预估(￥)"
+              name="shippingFeeRMB"
+              tooltip="运到目的国所需的运费，该数值用于自动计算商品的利润"
+              rules={[{ required: true, message: "请输入运费" }]}
+            >
+              <InputNumber min={0} precision={2} />
+            </Form.Item>
+
+            <Form.Item
+              label="平台商品运费($)"
+              name="saleShipPriceUSD"
+              tooltip="该数值用于自动计算商品的利润"
+              rules={[{ required: true, message: "请输入平台运费" }]}
+            >
+              <InputNumber min={0} precision={2} />
+            </Form.Item>
           </Row>
         </Col>
         <Col span={12}>
@@ -455,7 +548,7 @@ const ProductForm = forwardRef((props, ref) => {
         label="商品销售链接"
         name="listingLink"
         tooltip="制单时候需要"
-        rules={[{ required: true, message: "请输入商品价格" }]}
+        rules={[{ required: true, message: "请输入商品销售链接，用于制单申报" }]}
       >
         <Input />
       </Form.Item>
@@ -473,19 +566,6 @@ const ProductForm = forwardRef((props, ref) => {
           rules={[{ required: true, message: "请选择所属货架" }]}
         >
           <Select style={{ width: 200 }} options={productCategoryList} />
-        </Form.Item>
-        {/* 供应商选择（仅管理员可见） */}
-        <Form.Item
-          style={{ minWidth: "200px" }}
-          label="供应商"
-          name="suppliers"
-          rules={[{ required: true, message: "请至少选择一个供应商" }]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="选择供应商"
-            options={suppliers}
-          />
         </Form.Item>
       </Space>
 
@@ -531,7 +611,7 @@ const ProductForm = forwardRef((props, ref) => {
               if ((fileList || []).length >= 1) {
                 return Promise.resolve();
               }
-              return Promise.reject(new Error('至少上传一张图片'));
+              return Promise.reject(new Error("至少上传一张图片"));
             },
           }),
         ]}
@@ -545,7 +625,7 @@ const ProductForm = forwardRef((props, ref) => {
           multiple
           maxCount={5}
         >
-          {(form.getFieldValue('images') || []).length >= 5 ? null : (
+          {(form.getFieldValue("images") || []).length >= 5 ? null : (
             <div>
               <UploadOutlined />
               <div>上传图片（最多5张, 可批量上传）</div>

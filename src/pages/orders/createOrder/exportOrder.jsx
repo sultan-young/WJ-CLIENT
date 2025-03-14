@@ -78,6 +78,16 @@ const ExportOrder = forwardRef(
       preloadImages();
     }, []);
 
+    const getProductPrice = (item) => {
+      let price = item.costPriceRMB;
+
+      if (item.priceLinkSuppliers === 1) {
+       price = (item.costSuppliersLinkPricesRMB || []).find(priceObj => priceObj.id === supplierId)?.price || price 
+      }
+
+      return price
+    }
+
     // 创建专门用于导出的内容（确保每行至少4个商品）
     const createExportContent = async (imageUrlBase65Map) => {
       if (!contentRef.current) return null;
@@ -395,7 +405,7 @@ const ExportOrder = forwardRef(
       }
     };
 
-    const priceList = orderList?.map((a) => a.count * a.costPriceRMB);
+    const priceList = orderList?.map((order) => order.count * getProductPrice(order));
     const totalPrice = priceList.reduce((accumulator, currentValue) => {
       return accumulator + currentValue;
     }, 0);
@@ -480,7 +490,7 @@ const ExportOrder = forwardRef(
                             </div>
                             <span
                               className="product-card-title"
-                              style={{ margin: "6px 0", textAlign: "center" }}
+                              style={{ padding: "6px 0", textAlign: "center" }}
                             >{`${item.sku}(${item.nameCn})`}</span>
 
                             {isAdmin && (
@@ -495,8 +505,8 @@ const ExportOrder = forwardRef(
                               >
                                 总额：
                                 <span className="product-card-price">
-                                  {`${item.costPriceRMB}*${item.count}=${
-                                    item.costPriceRMB * item.count
+                                  {`${getProductPrice(item)}*${item.count}=${
+                                    getProductPrice(item) * item.count
                                   }`}
                                 </span>
                               </span>
@@ -523,12 +533,12 @@ const ExportOrder = forwardRef(
                     )}
                   </div>
                 </div>
-                <div className="order-notes">
+                {/* <div className="order-notes">
                   <div className="order-item-label">订单备注</div>
                   <div className="order-notes-content">
                     请在工作日发货，周末不在家。如有问题请联系手机号。产品请使用环保包装，谢谢！
                   </div>
-                </div>
+                </div> */}
 
                 <div className="company-watermark">造物无界</div>
               </div>

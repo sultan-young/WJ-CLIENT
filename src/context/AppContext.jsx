@@ -16,6 +16,7 @@ export const usePreloadData = () => useContext(PreloadDataContext);
 // 创建Provider组件
 export const PreloadDataProvider = ({ children }) => {
   const [suppliers, setSuppliers] = useState([]);
+  const [suppliersOption, setSuppliersOption] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [initialLoad, setInitialLoad] = useState(false);
@@ -25,6 +26,12 @@ export const PreloadDataProvider = ({ children }) => {
     // 获取供应商列表
     const suppliers = await getSuppliers();
     setSuppliers(suppliers);
+    setSuppliersOption(
+      suppliers.map((item) => ({
+        label: item.name,
+        value: item.id,
+      }))
+    );
   };
 
   // 首次加载数据
@@ -42,7 +49,7 @@ export const PreloadDataProvider = ({ children }) => {
   };
 
   return (
-    <PreloadDataContext.Provider value={{ suppliers }}>
+    <PreloadDataContext.Provider value={{ suppliers, suppliersOption }}>
       {children}
     </PreloadDataContext.Provider>
   );
