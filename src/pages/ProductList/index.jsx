@@ -18,31 +18,52 @@ import { updateProduct, deleteProduct } from "../../services/productService";
 import SearchBox from "../../components/searchBox";
 import OrderList from "../orders/orderList";
 import ProductCardForPreview from "../../components/Card/ProductCardForPreview";
+import { CHANGE_PRODUCT_MODE } from "./constant";
+
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [filters, setFilters] = useState({});
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
-  const [ createMode, setCreateMode] = useState('create')
+  const [ createMode, setCreateMode] = useState(CHANGE_PRODUCT_MODE.CREATE_PRODUCT)
 
   const createDrawerInfo = useMemo(() => {
-    if (createMode === 'create') {
+    if (createMode === CHANGE_PRODUCT_MODE.CREATE_PRODUCT) {
       return {
         title: '录入商品',
         submitBtn: '创建'
       }
     }
-    if (createMode === 'update') {
+    if (createMode === CHANGE_PRODUCT_MODE.UPDATE_PRODUCT) {
       return {
         title: `更新商品 - ${selectedProduct?.sku || ""}`,
         submitBtn: '更新'
       }
     }
-    if (createMode === 'quickCopy') {
+    if (createMode === CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT) {
       return {
         title: `以[${selectedProduct.nameCn}]为模板快速创建`,
         submitBtn: '创建'
+      }
+    }
+
+    if (createMode === CHANGE_PRODUCT_MODE.CREATE_PRODUCT_GROUP) {
+      return {
+        title: '录入商品组',
+        submitBtn: '创建商品组'
+      }
+    }
+    if (createMode === CHANGE_PRODUCT_MODE.UPDATE_PRODUCT_GROUP) {
+      return {
+        title: `更新商品组 - ${selectedProduct?.sku || ""}`,
+        submitBtn: '更新商品组'
+      }
+    }
+    if (createMode === CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT_GROUP) {
+      return {
+        title: `以[${selectedProduct.nameCn}]为模板快速创建商品组`,
+        submitBtn: '快速创建商品组'
       }
     }
   }, [createMode, selectedProduct])
@@ -70,6 +91,7 @@ const ProductList = () => {
 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRef = useRef();
+  console.log(formRef.current, 111)
 
   const handleDrawerSubmit = async (mode) => {
     try {
@@ -81,14 +103,14 @@ const ProductList = () => {
     }
   };
 
-  const handleCreate = async () => {
-    setCreateMode('create')
+  const handleCreate = async (mode) => {
+    setCreateMode(mode)
     setDrawerVisible(true)
     setSelectedProduct(null);
   }
 
   const onClickUpdate = (productInfo) => {
-    setCreateMode('update')
+    setCreateMode(CHANGE_PRODUCT_MODE.UPDATE_PRODUCT)
     setSelectedProduct(productInfo);
     setDrawerVisible(true)
   };
@@ -106,7 +128,7 @@ const ProductList = () => {
     // newProductInfoTemp.nameEn = "";
     newProductInfoTemp.images = [];
     newProductInfoTemp.variantSerial = "";
-    setCreateMode('quickCopy')
+    setCreateMode(CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT)
     setSelectedProduct(newProductInfoTemp);
     setDrawerVisible(true)
   };
@@ -140,10 +162,17 @@ const ProductList = () => {
         <Col span={6}>
           <Button
             type="primary"
-            onClick={handleCreate}
+            onClick={() => handleCreate(CHANGE_PRODUCT_MODE.CREATE_PRODUCT)}
             className="add-button"
           >
             录入商品
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => handleCreate(CHANGE_PRODUCT_MODE.CREATE_PRODUCT_GROUP)}
+            className="add-button"
+          >
+            录入商品组
           </Button>
         </Col>
       </Row>
@@ -199,6 +228,7 @@ const ProductList = () => {
         <ProductForm
           ref={formRef}
           hideSubmitButton
+          createMode={createMode}
           initialValues={selectedProduct && selectedProduct}
           onUpdate={updateProduct}
           toggleSubmitBtnLoadings={toggleSubmitBtnLoadings}

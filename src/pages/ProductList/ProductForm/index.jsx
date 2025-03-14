@@ -3,6 +3,7 @@ import React, {
   useEffect,
   useImperativeHandle,
   forwardRef,
+  useMemo,
 } from "react";
 import {
   Form,
@@ -40,8 +41,10 @@ import {
   rmb2usd,
 } from "../../../utils/calculateProfit";
 import { usePreloadData } from "../../../context/AppContext";
+import { CHANGE_PRODUCT_MODE } from "../constant";
+import { updateImageValidator } from "../common";
+import UploadImage from "../../../components/UploadImages";
 
-let imageUrlList = [];
 
 const renderDiscountPanelItems = (price = 0) => {
   let _price = (Number(price) || 0).toFixed(2);
@@ -95,26 +98,37 @@ const ProductForm = forwardRef((props, ref) => {
   const { suppliersOption } = usePreloadData();
 
   // 基础配置
-  const [form] = Form.useForm();
+  const [baseForm] = Form.useForm();
   // 监听 Radio 值变化
-  const hasVariant = Form.useWatch("hasVariant", form);
+  // const hasVariant = Form.useWatch("hasVariant", form);
   // 监听价格是否关联供应商
-  const isPriceLinkSuppliers = Form.useWatch("priceLinkSuppliers", form);
+  const isPriceLinkSuppliers = Form.useWatch("priceLinkSuppliers", baseForm);
 
   // 当隐藏输入框时，清除字段值和校验信息
-  useEffect(() => {
-    if (hasVariant !== 1) {
-      form.setFieldsValue({ variantSerial: undefined }); // 清除输入框值
-      form.validateFields(["variantSerial"]); // 清除校验状态
-    }
-  }, [hasVariant, form]);
+  // useEffect(() => {
+  //   if (hasVariant !== 1) {
+  //     form.setFieldsValue({ variantSerial: undefined }); // 清除输入框值
+  //     form.validateFields(["variantSerial"]); // 清除校验状态
+  //   }
+  // }, [hasVariant, form]);
 
   const {
     initialValues,
     hideSubmitButton = false,
     onSubmitSuccess,
     toggleSubmitBtnLoadings,
+    createMode,
   } = props;
+
+  const isGroupMode = useMemo(() => {
+    return [
+      CHANGE_PRODUCT_MODE.CREATE_PRODUCT_GROUP,
+      CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT_GROUP,
+      CHANGE_PRODUCT_MODE.UPDATE_PRODUCT_GROUP,
+    ].includes(createMode);
+  }, [createMode]);
+
+  console.log(isGroupMode, "isGroupMode");
 
   // 组件状态
   // TODO: 这里可优化，tags还未加入到form中
@@ -141,11 +155,13 @@ const ProductForm = forwardRef((props, ref) => {
 
   const autoCalculateProfit = () => {
     let { costPriceRMB, shippingFeeRMB, salePriceUSD, saleShipPriceUSD } =
-      form.getFieldValue();
-      if (isPriceLinkSuppliers) {
-        const values = form.getFieldValue("costSuppliersLinkPricesRMB");
-        costPriceRMB = Math.min(...((values || []).map(item => item.price).filter(price => !!price)))
-      }
+      baseForm.getFieldValue();
+    if (isPriceLinkSuppliers) {
+      const values = baseForm.getFieldValue("costSuppliersLinkPricesRMB");
+      costPriceRMB = Math.min(
+        ...(values || []).map((item) => item.price).filter((price) => !!price)
+      );
+    }
     if (costPriceRMB && shippingFeeRMB && salePriceUSD) {
       setProfitData({
         grossProfitMargin: calculateGrossProfit({
@@ -168,12 +184,12 @@ const ProductForm = forwardRef((props, ref) => {
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
     // create 创建 update 更新
-    submit: async (mode = "create") => {
-      await handleSubmit(mode);
+    submit: async () => {
+      await handleSubmit();
     },
-    reset: () => form.resetFields(),
+    reset: () => baseForm.resetFields(),
     validateFields: async () => {
-      const values = await form.validateFields();
+      const values = await baseForm.validateFields();
       const productData = formatSubmitData(values);
       return productData;
     },
@@ -190,24 +206,20 @@ const ProductForm = forwardRef((props, ref) => {
     if (initialValues) {
       const _values = {
         ...initialValues,
-        images: (initialValues.images || []).map((item) => ({
-          url: item.url,
-          uid: item.uid,
-          name: item.name,
-        })),
+        images: (initialValues.images || []),
       };
-      form.setFieldsValue(_values);
+      baseForm.setFieldsValue(_values);
       setTags(initialValues.tags || []);
-      const images = (initialValues.images || []).map(
-        ({ url, uid, name, picturebedId }) => ({
-          url,
-          name,
-          status: "done",
-          uid,
-          picturebedId,
-        })
-      );
-      imageUrlList = images;
+      // const images = (initialValues.images || []).map(
+      //   ({ url, uid, name, picturebedId }) => ({
+      //     url,
+      //     name,
+      //     status: "done",
+      //     uid,
+      //     picturebedId,
+      //   })
+      // );
+      // imageUrlList = images;
       autoCalculateProfit();
     } else {
       resetAll();
@@ -241,7 +253,7 @@ const ProductForm = forwardRef((props, ref) => {
   const formatSubmitData = (values) => ({
     ...values,
     tags,
-    images: imageUrlList,
+    // images: imageUrlList,
     suppliers: values.suppliers || [],
     category: values.category,
   });
@@ -250,27 +262,31 @@ const ProductForm = forwardRef((props, ref) => {
     setTags([]);
     setInputTag("");
     setLoading(false);
-    imageUrlList = [];
     setSubmitBtnLoadings(false);
-    form.resetFields();
+    baseForm.resetFields();
   };
 
   // 提交处理
-  const handleSubmit = async (mode = "create") => {
-    console.log(form.getFieldsValue());
-    await form.validateFields();
+  const handleSubmit = async () => {
+    await baseForm.validateFields();
     try {
       setLoading(true);
-      const productData = formatSubmitData(form.getFieldValue());
-      if (mode === "create" || mode === "quickCopy") {
+      const productData = formatSubmitData(baseForm.getFieldValue());
+      console.log(productData, 'productData', baseForm.getFieldsValue())
+      if (
+        [
+          CHANGE_PRODUCT_MODE.CREATE_PRODUCT,
+          CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT,
+        ].includes(createMode)
+      ) {
         await createProduct(productData);
       }
-      if (mode === "update") {
+      if ([CHANGE_PRODUCT_MODE.UPDATE_PRODUCT].includes(createMode)) {
         await updateProduct(productData);
       }
       resetAll();
       onSubmitSuccess?.();
-      // if (!initialValues) form.resetFields();
+      // if (!initialValues) baseForm.resetFields();
     } finally {
       setLoading(false);
     }
@@ -288,73 +304,11 @@ const ProductForm = forwardRef((props, ref) => {
     toggleSubmitBtnLoadings?.(loading);
   };
 
-  // 自定义上传逻辑
-  const customUpload = async ({ file, onSuccess, onError }) => {
-    // const sign =
-    const sign = await getUploadProductImageSign();
-    const formData = new FormData();
-    formData.append("file", file); // 添加文件到表单数据
-    formData.append("sign", sign.sign);
-    formData.append("id", sign.id);
-    formData.append("ts", sign.ts);
-    formData.append("compress", true);
 
-    changeSubmitBtnLoadings(true);
-    // 发起文件上传请求
-    axios
-      .post(`https://api.superbed.cn/upload`, formData, {})
-      .then((data) => {
-        const { err, url, msg, id, name, size } = data.data;
-        if (err !== 0) {
-          message.error(msg);
-          throw Error(msg);
-        }
-        // 假设聚合图床返回的图片地址为 `data.url`
-        imageUrlList.push({
-          url,
-          picturebedId: id,
-          uid: file.uid,
-          name,
-          size,
-        });
-        onSuccess("Success");
-        message.success("图片上传成功！");
-      })
-      .catch((error) => {
-        onError(error);
-        message.error("图片上传失败！图床服务器未知错误");
-      })
-      .finally(() => {
-        changeSubmitBtnLoadings(false);
-      });
-  };
-
-  const onRemoveImage = async (file) => {
-    const uid = file.uid;
-    const removeImageIds = imageUrlList
-      .filter((item) => item.uid === uid)
-      .map((item) => item.picturebedId);
-
-    changeSubmitBtnLoadings(true);
-    deleteProductImage(removeImageIds)
-      .then((res) => {
-        const { err, msg: deleteMessage } = res;
-        if (err === 0) {
-          message.success(deleteMessage);
-        } else {
-          message.error(deleteMessage);
-        }
-      })
-      .finally(() => {
-        changeSubmitBtnLoadings(false);
-      });
-    const newImageUrlList = imageUrlList.filter((item) => item.uid !== uid);
-    imageUrlList = newImageUrlList;
-  };
   const onSelectSupplierChange = (value, option, v) => {
     // 获取当前 formList 的值
     const currentCostSuppliersLinkPricesRMB =
-      form.getFieldValue("costSuppliersLinkPricesRMB") || [];
+      baseForm.getFieldValue("costSuppliersLinkPricesRMB") || [];
 
     // 1. 过滤掉已移除的 id
     const remainingItems = currentCostSuppliersLinkPricesRMB.filter((item) =>
@@ -375,201 +329,215 @@ const ProductForm = forwardRef((props, ref) => {
     ];
 
     // 更新 formList 字段
-    form.setFieldsValue({ costSuppliersLinkPricesRMB: newItems });
+    baseForm.setFieldsValue({ costSuppliersLinkPricesRMB: newItems });
   };
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleSubmit}
-      onChange={handleFormChange}
-      initialValues={{
-        stock: 0,
-        price: 0,
-        shippingFeeRMB: 35,
-        hasVariant: 0,
-        priceLinkSuppliers: 0,
-      }}
-    >
-      {/* 商品名称 */}
-      <Form.Item
-        label="中文名称"
-        name="nameCn"
-        tooltip="该名称会展示在订单图片和制单的excel中"
-        rules={[{ required: true, message: "请输入中文名称" }]}
+    <>
+      <Form
+        form={baseForm}
+        layout="vertical"
+        onFinish={handleSubmit}
+        onChange={handleFormChange}
+        initialValues={{
+          stock: 0,
+          price: 0,
+          shippingFeeRMB: 35,
+          hasVariant: 0,
+          priceLinkSuppliers: 0,
+        }}
       >
-        <Input placeholder="该名称会展示在订单图片和制单的excel中" />
-      </Form.Item>
+        {/* 商品名称 */}
+        <Form.Item
+          label="中文名称"
+          name="nameCn"
+          tooltip="该名称会展示在订单图片和制单的excel中"
+          rules={[{ required: true, message: "请输入中文名称" }]}
+        >
+          <Input placeholder="该名称会展示在订单图片和制单的excel中" />
+        </Form.Item>
 
-      {/* 商品名称 */}
-      <Form.Item
-        label="英文名称"
-        name="nameEn"
-        tooltip="该名称会展示在制单的excel中"
-        rules={[{ required: true, message: "请输入英文名称" }]}
-      >
-        <Input placeholder="该名称会展示在制单的excel中" />
-      </Form.Item>
+        {/* 商品名称 */}
+        <Form.Item
+          label="英文名称"
+          name="nameEn"
+          tooltip="该名称会展示在制单的excel中"
+          rules={[{ required: true, message: "请输入英文名称" }]}
+        >
+          <Input placeholder="该名称会展示在制单的excel中" />
+        </Form.Item>
 
-      {/* 供应商选择（仅管理员可见） */}
-      <Row gutter={40}>
-        <Col>
-          <Form.Item
-            style={{ minWidth: "200px" }}
-            label="供应商"
-            name="suppliers"
-            rules={[{ required: true, message: "请至少选择一个供应商" }]}
-          >
-            <Select
-              mode="multiple"
-              onChange={onSelectSupplierChange}
-              placeholder="选择供应商"
-              options={suppliersOption}
-            />
-          </Form.Item>
-        </Col>
-        <Col>
-          <Form.Item
-            name="priceLinkSuppliers"
-            label="价格是否关联供应商"
-            tooltip="如果价格关联了供应商，则需要为每个供应商指定一个产品价格"
-          >
-            <Radio.Group>
-              <Radio value={0}> 不关联 </Radio>
-              <Radio value={1}> 关联 </Radio>
-            </Radio.Group>
-          </Form.Item>
-        </Col>
-      </Row>
+        {/* 供应商选择（仅管理员可见） */}
+        <Row gutter={40}>
+          <Col>
+            <Form.Item
+              style={{ minWidth: "200px" }}
+              label="供应商"
+              name="suppliers"
+              rules={[{ required: true, message: "请至少选择一个供应商" }]}
+            >
+              <Select
+                mode="multiple"
+                onChange={onSelectSupplierChange}
+                placeholder="选择供应商"
+                options={suppliersOption}
+              />
+            </Form.Item>
+          </Col>
+          <Col>
+            <Form.Item
+              name="priceLinkSuppliers"
+              label="价格是否关联供应商"
+              tooltip="如果价格关联了供应商，则需要为每个供应商指定一个产品价格"
+            >
+              <Radio.Group>
+                <Radio value={0}> 不关联 </Radio>
+                <Radio value={1}> 关联 </Radio>
+              </Radio.Group>
+            </Form.Item>
+          </Col>
+        </Row>
 
-      <Row>
-        <Col span={12}>
-          {/* 库存和价格 */}
-          <Row gutter={4}>
-            {!isPriceLinkSuppliers ? (
+        <Row>
+          <Col span={12}>
+            {/* 库存和价格 */}
+            <Row gutter={4}>
+              {!isPriceLinkSuppliers ? (
+                <Form.Item
+                  label="商品成本价(￥)"
+                  name="costPriceRMB"
+                  rules={[
+                    {
+                      required: true,
+                      message:
+                        "请输入商品进价（与供应商，手工艺人约定好的价格）",
+                    },
+                  ]}
+                >
+                  <InputNumber min={0} precision={2} />
+                </Form.Item>
+              ) : (
+                <Form.List name="costSuppliersLinkPricesRMB">
+                  {(fields) => (
+                    <div className="linkPriceContainer">
+                      <div className="linkPriceContainer-title">
+                        各个供应商合作价(￥)
+                      </div>
+                      <div className="linkPriceContainer-wrap">
+                        {fields.map(({ key, name, ...restField }) => {
+                          // 获取当前项的 供应商名称
+                          const supplierName = baseForm.getFieldValue([
+                            "costSuppliersLinkPricesRMB",
+                            name,
+                            "name",
+                          ]);
+
+                          return (
+                            <Form.Item
+                              {...restField}
+                              key={key}
+                              name={[name, "price"]}
+                              label={`${supplierName}`}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: `请输入${supplierName}的合作价`,
+                                },
+                              ]}
+                            >
+                              <InputNumber />
+                            </Form.Item>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </Form.List>
+              )}
+
               <Form.Item
-                label="商品成本价(￥)"
-                name="costPriceRMB"
-                rules={[{ required: true, message: "请输入商品进价（与供应商，手工艺人约定好的价格）" }]}
+                label="平台销售价格($)"
+                name="salePriceUSD"
+                tooltip="该数值用于自动计算商品的利润"
+                rules={[
+                  { required: true, message: "请输入商品在平台的销售价格" },
+                ]}
               >
                 <InputNumber min={0} precision={2} />
               </Form.Item>
-            ) : (
-              <Form.List name="costSuppliersLinkPricesRMB">
-                {(fields) => (
-                  <div className="linkPriceContainer">
-                    <div className="linkPriceContainer-title">各个供应商合作价(￥)</div>
-                    <div className="linkPriceContainer-wrap">
-                      {fields.map(({ key, name, ...restField }) => {
-                        // 获取当前项的 供应商名称
-                        const supplierName = form.getFieldValue([
-                          "costSuppliersLinkPricesRMB",
-                          name,
-                          "name",
-                        ]);
 
-                        return (
-                          <Form.Item
-                            {...restField}
-                            key={key}
-                            name={[name, "price"]}
-                            label={`${supplierName}`}
-                            rules={[
-                              {
-                                required: true,
-                                message: `请输入${supplierName}的合作价`,
-                              },
-                            ]}
-                          >
-                            <InputNumber />
-                          </Form.Item>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </Form.List>
-            )}
+              <Form.Item
+                label="运费预估(￥)"
+                name="shippingFeeRMB"
+                tooltip="运到目的国所需的运费，该数值用于自动计算商品的利润"
+                rules={[{ required: true, message: "请输入运费" }]}
+              >
+                <InputNumber min={0} precision={2} />
+              </Form.Item>
 
-            <Form.Item
-              label="平台销售价格($)"
-              name="salePriceUSD"
-              tooltip="该数值用于自动计算商品的利润"
-              rules={[{ required: true, message: "请输入商品在平台的销售价格" }]}
-            >
-              <InputNumber min={0} precision={2} />
-            </Form.Item>
-
-            <Form.Item
-              label="运费预估(￥)"
-              name="shippingFeeRMB"
-              tooltip="运到目的国所需的运费，该数值用于自动计算商品的利润"
-              rules={[{ required: true, message: "请输入运费" }]}
-            >
-              <InputNumber min={0} precision={2} />
-            </Form.Item>
-
-            <Form.Item
-              label="平台商品运费($)"
-              name="saleShipPriceUSD"
-              tooltip="该数值用于自动计算商品的利润"
-              rules={[{ required: true, message: "请输入平台运费" }]}
-            >
-              <InputNumber min={0} precision={2} />
-            </Form.Item>
-          </Row>
-        </Col>
-        <Col span={12}>
-          <div className="profit-container">
-            <div className="profit-container-title">利润试算</div>
-            <div className="profit-container-item">
-              <span>毛利率</span>
-              <span>{profitData.grossProfitMargin || "--"}%</span>
-            </div>
-            {/* <div className="profit-container-item">
+              <Form.Item
+                label="平台商品运费($)"
+                name="saleShipPriceUSD"
+                tooltip="该数值用于自动计算商品的利润"
+                rules={[{ required: true, message: "请输入平台运费" }]}
+              >
+                <InputNumber min={0} precision={2} />
+              </Form.Item>
+            </Row>
+          </Col>
+          <Col span={12}>
+            <div className="profit-container">
+              <div className="profit-container-title">利润试算</div>
+              <div className="profit-container-item">
+                <span>毛利率</span>
+                <span>{profitData.grossProfitMargin || "--"}%</span>
+              </div>
+              {/* <div className="profit-container-item">
               <span>净利率</span>
               <span>{profitData.netProfitMargin || "--"}%</span>
             </div> */}
-            <div className="profit-container-item">
-              <span>预估利润</span>
-              <span>{profitData.profit || "--"}￥</span>
+              <div className="profit-container-item">
+                <span>预估利润</span>
+                <span>{profitData.profit || "--"}￥</span>
+              </div>
+              <Collapse
+                size="small"
+                items={renderDiscountPanelItems(profitData.profit)}
+              />
             </div>
-            <Collapse
-              size="small"
-              items={renderDiscountPanelItems(profitData.profit)}
-            />
-          </div>
-        </Col>
-      </Row>
-      {/* SKU 编号 */}
+          </Col>
+        </Row>
+        {/* SKU 编号 */}
 
-      <Form.Item
-        label="商品销售链接"
-        name="listingLink"
-        tooltip="制单时候需要"
-        rules={[{ required: true, message: "请输入商品销售链接，用于制单申报" }]}
-      >
-        <Input />
-      </Form.Item>
-      <Space wrap>
         <Form.Item
-          label="库存数量"
-          name="stock"
-          rules={[{ required: true, message: "请输入库存数量" }]}
+          label="商品销售链接"
+          name="listingLink"
+          tooltip="制单时候需要"
+          rules={[
+            { required: true, message: "请输入商品销售链接，用于制单申报" },
+          ]}
         >
-          <InputNumber min={0} />
+          <Input />
         </Form.Item>
-        <Form.Item
-          label="所属分类"
-          name="category"
-          rules={[{ required: true, message: "请选择所属货架" }]}
-        >
-          <Select style={{ width: 200 }} options={productCategoryList} />
-        </Form.Item>
-      </Space>
+        <Space wrap>
+          <Form.Item
+            label="库存数量"
+            name="stock"
+            tooltip="商品组没有库存，所有的子商品各自维护库存"
+            rules={[{ required: !isGroupMode, message: "请输入库存数量" }]}
+          >
+            <InputNumber disabled={isGroupMode} min={0} />
+          </Form.Item>
+          <Form.Item
+            label="所属分类"
+            name="category"
+            rules={[{ required: true, message: "请选择所属货架" }]}
+          >
+            <Select style={{ width: 200 }} options={productCategoryList} />
+          </Form.Item>
+        </Space>
 
-      <Row gutter={5}>
+        {/* <Row gutter={5}>
         <Col>
           <Form.Item
             name="hasVariant"
@@ -597,92 +565,74 @@ const ProductForm = forwardRef((props, ref) => {
             <></>
           )}
         </Col>
-      </Row>
+      </Row> */}
 
-      {/* 图片上传 */}
-      <Form.Item
-        label="商品图片"
-        name="images"
-        valuePropName="fileList"
-        getValueFromEvent={normFile}
-        rules={[
-          () => ({
-            validator(_, fileList) {
-              if ((fileList || []).length >= 1) {
-                return Promise.resolve();
-              }
-              return Promise.reject(new Error("至少上传一张图片"));
-            },
-          }),
-        ]}
-      >
-        <Upload
-          customRequest={customUpload}
-          listType="picture-card"
-          beforeUpload={beforeUpload}
-          onRemove={onRemoveImage}
-          accept="image/*"
-          multiple
-          maxCount={5}
+        {/* 图片上传 */}
+        <Form.Item
+          label="商品图片"
+          name="images"
+          valuePropName="fileList"
+          getValueFromEvent={normFile}
+          rules={[updateImageValidator]}
         >
-          {(form.getFieldValue("images") || []).length >= 5 ? null : (
-            <div>
-              <UploadOutlined />
-              <div>上传图片（最多5张, 可批量上传）</div>
-            </div>
-          )}
-        </Upload>
-      </Form.Item>
-
-      {/* 标签管理 */}
-      <Form.Item name="tags" label="商品标签">
-        <div className="tag-manager">
-          <Select
-            mode="tags"
-            value={tags}
-            onChange={setTags}
-            dropdownRender={() => (
-              <div className="tag-input-wrapper">
-                <Input
-                  value={inputTag}
-                  onChange={(e) => setInputTag(e.target.value)}
-                  onPressEnter={handleTagAdd}
-                  placeholder="输入新标签"
-                />
-                <Button
-                  type="link"
-                  onClick={handleTagAdd}
-                  icon={<PlusOutlined />}
-                >
-                  添加
-                </Button>
-              </div>
-            )}
-          />
-        </div>
-      </Form.Item>
-
-      {/* 备注 */}
-      <Form.Item label="备注" name="notes">
-        <Input.TextArea rows={3} />
-      </Form.Item>
-
-      {/* 独立提交按钮 */}
-      {!hideSubmitButton && (
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            submitBtnLoadings={submitBtnLoadings}
-            loading={loading}
-            block
-            size="large"
-          >
-            {initialValues ? "更新商品" : "创建商品"}
-          </Button>
+          <UploadImage changeSubmitBtnLoadings={changeSubmitBtnLoadings}/>
         </Form.Item>
-      )}
-    </Form>
+
+        {/* 标签管理 */}
+        <Form.Item name="tags" label="商品标签">
+          <div className="tag-manager">
+            <Select
+              mode="tags"
+              value={tags}
+              onChange={setTags}
+              dropdownRender={() => (
+                <div className="tag-input-wrapper">
+                  <Input
+                    value={inputTag}
+                    onChange={(e) => setInputTag(e.target.value)}
+                    onPressEnter={handleTagAdd}
+                    placeholder="输入新标签"
+                  />
+                  <Button
+                    type="link"
+                    onClick={handleTagAdd}
+                    icon={<PlusOutlined />}
+                  >
+                    添加
+                  </Button>
+                </div>
+              )}
+            />
+          </div>
+        </Form.Item>
+
+        {/* 备注 */}
+        <Form.Item label="备注" name="notes">
+          <Input.TextArea rows={3} />
+        </Form.Item>
+
+        {/* 独立提交按钮 */}
+        {!hideSubmitButton && (
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              submitBtnLoadings={submitBtnLoadings}
+              loading={loading}
+              block
+              size="large"
+            >
+              {initialValues ? "更新商品" : "创建商品"}
+            </Button>
+          </Form.Item>
+        )}
+      </Form>
+      <Form>
+        <Form.Item>
+          
+        </Form.Item>
+      </Form>
+    </>
   );
 });
 

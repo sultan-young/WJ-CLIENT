@@ -82,4 +82,5 @@
     &:hover::before {
       opacity: 0;
     }
+    margin-right: 10px;
   }
