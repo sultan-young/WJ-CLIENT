@@ -10,14 +10,9 @@
   justify-content: center;
   /* max-height: 280px; */
   width: 100%;
-  
-  overflow: hidden;
   /* max-width: 280px; */
 }
 
-.ant-card-cover .ant-image {
-  height: 200px;
-}
 .ant-card-cover .ant-image-img {
   width: 100%;
   object-fit: cover;
@@ -26,7 +21,6 @@
 
 .ant-card-body {
   width: 100%;
-  overflow: hidden;
 }
 
 .product-card .ant-card-actions {

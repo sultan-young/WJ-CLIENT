@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Dropdown, Space } from "antd";
-import { DownOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined, DownOutlined } from "@ant-design/icons";
 import "./styles.css"; // 创建对应的CSS文件
 
 const SearchBox = ({ onSearch }) => {
@@ -123,6 +123,7 @@ const SearchBox = ({ onSearch }) => {
           className="search-input"
           aria-label="Search"
         />
+        {searchTerm ? <CloseCircleOutlined onClick={() => setSearchTerm('')} style={{padding: '10px'}} /> : null}
         <button type="submit" className="search-button">
           <svg
             className="search-icon"

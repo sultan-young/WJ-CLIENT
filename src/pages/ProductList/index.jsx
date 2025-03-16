@@ -1,30 +1,26 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import {
-  Input,
-  Select,
   Button,
   List,
   Drawer,
   message,
-  ConfigProvider,
   Row,
   Col,
+  Badge,
 } from "antd";
-import { AntDesignOutlined } from "@ant-design/icons";
 import { getProducts, searchProduct } from "../../services/productService";
 import "./styles.css";
 import ProductForm from "./ProductForm";
 import { updateProduct, deleteProduct } from "../../services/productService";
 import SearchBox from "../../components/searchBox";
-import OrderList from "../orders/orderList";
 import ProductCardForPreview from "../../components/Card/ProductCardForPreview";
 import { CHANGE_PRODUCT_MODE } from "./constant";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
-  const [filters, setFilters] = useState({});
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
+  const [pageLoading, setPageLoading] = useState(false)
   const [createMode, setCreateMode] = useState(
     CHANGE_PRODUCT_MODE.CREATE_PRODUCT
   );
@@ -81,14 +77,9 @@ const ProductList = () => {
     }
   };
 
-  const loadData = async () => {
-    const res = await getProducts(filters);
-    setProducts(res.data);
-  };
-
   useEffect(() => {
     loadData();
-  }, [filters]);
+  }, []);
 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRef = useRef();
@@ -112,14 +103,17 @@ const ProductList = () => {
   };
 
   const onClickUpdate = (productInfo) => {
-    setCreateMode(CHANGE_PRODUCT_MODE.UPDATE_PRODUCT);
+    setCreateMode(
+      productInfo.isGroup
+        ? CHANGE_PRODUCT_MODE.UPDATE_PRODUCT_GROUP
+        : CHANGE_PRODUCT_MODE.UPDATE_PRODUCT
+    );
     setSelectedProduct(productInfo);
     setDrawerVisible(true);
   };
 
   // 快速复制同类商品用于创建
   const onCopy = (productInfo) => {
-    console.log(productInfo, 'productInfo')
     const newProductInfoTemp = {
       ...productInfo,
     };
@@ -131,7 +125,11 @@ const ProductList = () => {
     // newProductInfoTemp.nameEn = "";
     newProductInfoTemp.images = [];
     newProductInfoTemp.variantSerial = "";
-    setCreateMode(CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT);
+    setCreateMode(
+      productInfo.isGroup
+        ? CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT_GROUP
+        : CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT
+    );
     setSelectedProduct(newProductInfoTemp);
     setDrawerVisible(true);
   };
@@ -140,11 +138,29 @@ const ProductList = () => {
     setSubmitBtnLoadings(loading);
   };
 
-  const onSearch = async (data) => {
+  /**
+   *  搜索和获取商品列表的区别在于
+   *  获取商品列表时候，只会获取到商品组和普通商品。
+   *  搜索时候会获取到普通商品，商品组以及商品组下的子商品
+   */
+  const loadData = async (searchTerm) => {
+    let data;
+    setPageLoading(true)
+    if (searchTerm) {
+      data = await onSearch(searchTerm);
+    } else {
+      data = await getProducts();
+    }
+    setProducts(data);
+    console.log(111, data)
+    setPageLoading(false)
+  };
+
+  const onSearch = async (searchTerm) => {
     const res = await searchProduct({
-      queryParams: data,
+      queryParams: searchTerm,
     });
-    setProducts(res);
+    return res;
   };
 
   const isSingle = products?.length === 1;
@@ -156,8 +172,8 @@ const ProductList = () => {
       >
         <Col span={18}>
           <SearchBox
-            onSearch={(data) => {
-              onSearch(data);
+            onSearch={(searchTerm) => {
+              loadData(searchTerm)
             }}
             style={{ flex: "1 1 0" }}
           ></SearchBox>
@@ -183,8 +199,9 @@ const ProductList = () => {
       </Row>
 
       <List
+        loading={pageLoading}
         grid={{
-          gutter: isSingle ? 1 : 6,
+          gutter: isSingle ? 1 : 12,
           xs: isSingle ? 1 : 2,
           sm: isSingle ? 1 : 2,
           md: isSingle ? 1 : 4,
@@ -195,15 +212,29 @@ const ProductList = () => {
         dataSource={products}
         renderItem={(item) => (
           <List.Item>
-            <ProductCardForPreview
-              product={item}
-              isSingleShow={!(products?.length > 1)}
-              onUpdate={() => onClickUpdate(item)}
-              onSuccessCb={loadData}
-              onDelete={() => handleDelete(item.id)}
-              onCopy={() => onCopy(item)}
-              key={item.id}
-            />
+            {item.isGroup ? (
+              <Badge.Ribbon text="商品组">
+                <ProductCardForPreview
+                  product={item}
+                  isSingleShow={!(products?.length > 1)}
+                  onUpdate={() => onClickUpdate(item)}
+                  onSuccessCb={loadData}
+                  onDelete={() => handleDelete(item.id)}
+                  onCopy={() => onCopy(item)}
+                  key={item.id}
+                />
+              </Badge.Ribbon>
+            ) : (
+              <ProductCardForPreview
+                product={item}
+                isSingleShow={!(products?.length > 1)}
+                onUpdate={() => onClickUpdate(item)}
+                onSuccessCb={loadData}
+                onDelete={() => handleDelete(item.id)}
+                onCopy={() => onCopy(item)}
+                key={item.id}
+              />
+            )}
           </List.Item>
         )}
       />

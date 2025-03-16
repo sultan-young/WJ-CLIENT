@@ -9,7 +9,6 @@
   width: 100%;
 }
 .product-card {
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;

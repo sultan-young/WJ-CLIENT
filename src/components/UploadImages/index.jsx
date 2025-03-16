@@ -1,23 +1,28 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { message, Upload } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import {
   deleteProductImage,
   getUploadProductImageSign,
 } from "../../services/productService";
 import axios from "axios";
+import ImageGallery from "../ImageContainer";
 
 const UploadImage = ({
   fileList = [], // 接收对象数组 [{url: "xxx", ...}]
   onChange,
   changeSubmitBtnLoadings,
 }) => {
-    const latestValue = useRef(fileList);
+  const latestValue = useRef(fileList);
+  const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        latestValue.current = fileList;
-    }, [fileList]);
-
+  useEffect(() => {
+    latestValue.current = fileList;
+  }, [fileList]);
 
   // 转换工具函数：将外部数据格式转为 Upload 需要的格式
   const convertToUploadFormat = (list) => {
@@ -35,6 +40,7 @@ const UploadImage = ({
   const customUpload = async ({ file, onSuccess, onError }) => {
     try {
       changeSubmitBtnLoadings(true);
+      setLoading(true);
       const sign = await getUploadProductImageSign();
 
       const formData = new FormData();
@@ -53,18 +59,18 @@ const UploadImage = ({
 
       setTimeout(() => {
         const newList = [
-            ...latestValue.current,
-            {
-              url: data.url,
-              picturebedId: data.id,
-              name: data.name,
-              size: data.size,
-              uid: file.uid,
-            },
-          ];
-    
-          // 更新父组件数据（函数式更新保证数据一致性）
-          onChange(newList);
+          ...latestValue.current,
+          {
+            url: data.url,
+            picturebedId: data.id,
+            name: data.name,
+            size: data.size,
+            uid: file.uid,
+          },
+        ];
+
+        // 更新父组件数据（函数式更新保证数据一致性）
+        onChange(newList);
       }, 0);
       onSuccess("Success");
       message.success("图片上传成功！");
@@ -73,6 +79,7 @@ const UploadImage = ({
       message.error(error.message || "上传失败");
     } finally {
       changeSubmitBtnLoadings(false);
+      setLoading(false);
     }
   };
 
@@ -93,6 +100,24 @@ const UploadImage = ({
     }
   };
 
+  const UploadButton = useMemo(() => {
+    const imageUrls = (fileList || []).map((file) => file.url);
+    // return (
+    //   fileList.length >= 1 ? <ImageGallery images={imageUrls}/> : (
+    //     <div>
+    //       {loading ? <LoadingOutlined /> : <UploadOutlined />}
+    //       <div>上传图片（最多5张）</div>
+    //     </div>
+    //   )
+    // )
+    return fileList.length >= 5 ? null : (
+      <div>
+        {loading ? <LoadingOutlined /> : <UploadOutlined />}
+        <div>上传图片（最多5张）</div>
+      </div>
+    );
+  }, [fileList, loading]);
+
   return (
     <Upload
       fileList={convertToUploadFormat(fileList)} // 实时转换格式
@@ -108,13 +133,9 @@ const UploadImage = ({
       accept="image/*"
       multiple
       maxCount={5}
+      // showUploadList={false}
     >
-      {fileList.length >= 5 ? null : (
-        <div>
-          <UploadOutlined />
-          <div>上传图片（最多5张）</div>
-        </div>
-      )}
+      {UploadButton}
     </Upload>
   );
 };

@@ -19,6 +19,7 @@ import {
   Col,
   Collapse,
   Radio,
+  Divider,
 } from "antd";
 import {
   UploadOutlined,
@@ -48,37 +49,37 @@ const renderDiscountPanelItems = (price = 0) => {
     {
       key: "1",
       label: (
-        <div className={styles['discount-item']}>
+        <div className={styles["discount-item"]}>
           <span>9折预估利润</span> <span>${_price * 0.9}</span>
         </div>
       ),
       children: (
-        <div className={styles['discount']}>
-          <div className={styles['discount-item']}>
+        <div className={styles["discount"]}>
+          <div className={styles["discount-item"]}>
             <span>8折预估利润 </span>{" "}
             <span>
               {_price * 0.8}￥({rmb2usd(_price * 0.8)}$)
             </span>
           </div>
-          <div className={styles['discount-item']}>
+          <div className={styles["discount-item"]}>
             <span>7折预估利润</span>{" "}
             <span>
               {_price * 0.7}￥ ({rmb2usd(_price * 0.7)}$)
             </span>
           </div>
-          <div className={styles['discount-item']}>
+          <div className={styles["discount-item"]}>
             <span>6折预估利润</span>{" "}
             <span>
               {_price * 0.6}￥ ({rmb2usd(_price * 0.6)}$)
             </span>
           </div>
-          <div className={styles['discount-item']}>
+          <div className={styles["discount-item"]}>
             <span>5折预估利润</span>{" "}
             <span>
               {_price * 0.5}￥ ({rmb2usd(_price * 0.5)}$)
             </span>
           </div>
-          <div className={styles['discount-item']}>
+          <div className={styles["discount-item"]}>
             <span>4折预估利润</span>{" "}
             <span>
               {_price * 0.4}￥ ({rmb2usd(_price * 0.4)}$)
@@ -121,6 +122,24 @@ const ProductForm = forwardRef((props, ref) => {
     return [
       CHANGE_PRODUCT_MODE.CREATE_PRODUCT_GROUP,
       CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT_GROUP,
+      CHANGE_PRODUCT_MODE.UPDATE_PRODUCT_GROUP,
+    ].includes(createMode);
+  }, [createMode]);
+
+  // 创建或复制
+  const isCreateOrCopyMode = useMemo(() => {
+    return [
+      CHANGE_PRODUCT_MODE.CREATE_PRODUCT_GROUP,
+      CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT_GROUP,
+      CHANGE_PRODUCT_MODE.CREATE_PRODUCT,
+      CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT,
+    ].includes(createMode);
+  }, [createMode]);
+
+  // 编辑
+  const isUpdateMode = useMemo(() => {
+    return [
+      CHANGE_PRODUCT_MODE.UPDATE_PRODUCT,
       CHANGE_PRODUCT_MODE.UPDATE_PRODUCT_GROUP,
     ].includes(createMode);
   }, [createMode]);
@@ -183,11 +202,6 @@ const ProductForm = forwardRef((props, ref) => {
       return await handleSubmit();
     },
     reset: () => baseForm.resetFields(),
-    validateFields: async () => {
-      const values = await baseForm.validateFields();
-      const productData = formatSubmitData(values);
-      return productData;
-    },
   }));
 
   // 初始化数据
@@ -205,6 +219,11 @@ const ProductForm = forwardRef((props, ref) => {
       };
       baseForm.setFieldsValue(_values);
       setTags(initialValues.tags || []);
+      if (isGroupMode) {
+        childrenForm.setFieldsValue({
+          subProducts: initialValues.children,
+        });
+      }
       autoCalculateProfit();
     } else {
       resetAll();
@@ -234,15 +253,8 @@ const ProductForm = forwardRef((props, ref) => {
     }
   };
 
-  // 格式化提交数据
-  const formatSubmitData = (values) => ({
-    ...values,
-    tags,
-    suppliers: values.suppliers || [],
-    category: values.category,
-  });
-
   const resetAll = async () => {
+    // TODO: 删除
     setTags([]);
     setInputTag("");
     setLoading(false);
@@ -252,23 +264,28 @@ const ProductForm = forwardRef((props, ref) => {
 
   // 提交处理
   const handleSubmit = async () => {
+    const validateList = [baseForm.validateFields()];
+
     if (isGroupMode) {
-      return await handleGroupCreate();
+      validateList.push(childrenForm.validateFields());
     }
-    await baseForm.validateFields();
+    await Promise.all(validateList);
+
     try {
       setLoading(true);
-      const productData = formatSubmitData(baseForm.getFieldValue());
-      if (
-        [
-          CHANGE_PRODUCT_MODE.CREATE_PRODUCT,
-          CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT,
-        ].includes(createMode)
-      ) {
-        await createProduct(productData);
+      const ProductData = {
+        ...baseForm.getFieldValue(),
+        tags,
+      };
+      if (isGroupMode) {
+        ProductData.isGroup = true;
+        ProductData.children = childrenForm.getFieldValue()?.subProducts || [];
       }
-      if ([CHANGE_PRODUCT_MODE.UPDATE_PRODUCT].includes(createMode)) {
-        await updateProduct(productData);
+      if (isCreateOrCopyMode) {
+        await createProduct(ProductData);
+      }
+      if (isUpdateMode) {
+        await updateProduct(ProductData);
       }
       resetAll();
       onSubmitSuccess?.();
@@ -277,20 +294,6 @@ const ProductForm = forwardRef((props, ref) => {
     } finally {
       setLoading(false);
     }
-  };
-  const handleGroupCreate = async () => {
-    await Promise.all([childrenForm.validateFields(), baseForm.validateFields()])
-    // setLoading(true);
-    const groupData = {
-      ...formatSubmitData(baseForm.getFieldValue()),
-      isGroup: true,
-      children: [
-        childrenForm.getFieldValue(),
-      ]
-    }
-    await createProduct(groupData);
-
-    return false;
   };
 
   const changeSubmitBtnLoadings = (loading) => {
@@ -566,7 +569,7 @@ const ProductForm = forwardRef((props, ref) => {
           name="images"
           valuePropName="fileList"
           getValueFromEvent={normFile}
-          rules={[updateImageValidator]}
+          rules={[isGroupMode ? null : updateImageValidator]}
         >
           <UploadImage changeSubmitBtnLoadings={changeSubmitBtnLoadings} />
         </Form.Item>
@@ -621,40 +624,81 @@ const ProductForm = forwardRef((props, ref) => {
         )}
       </Form>
       {isGroupMode ? (
-        <Form
-          form={childrenForm}
-          layout="vertical"
-          onFinish={handleSubmit}
-          initialValues={{
-            stock: 0,
-          }}
-        >
-          <div>录入子商品</div>
-          <Row>
-            <Form.Item
-              label="商品图片"
-              name="images"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-            >
-              <UploadImage changeSubmitBtnLoadings={changeSubmitBtnLoadings} />
-            </Form.Item>
-            <Form.Item
-              label="子商品编号"
-              rules={[{ required: true, message: "商品编号为必填" }]}
-              name="variantSerial"
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="库存数量"
-              name="stock"
-              tooltip="子商品库存"
-              rules={[{ required: true, message: "请输入库存数量" }]}
-            >
-              <InputNumber min={0} />
-            </Form.Item>
-          </Row>
+        <Form form={childrenForm} layout="vertical" onFinish={handleSubmit}>
+          <Divider orientation="left">录入子商品</Divider>
+          <Form.List name="subProducts">
+            {(fields, { key, name, add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => {
+                  // 获取当前行是否为已存在数据
+                  const isExisting = childrenForm.getFieldValue([
+                    "subProducts",
+                    name,
+                    "variantSerial",
+                  ]);
+                  return (
+                    <Space
+                      key={key}
+                      style={{ display: "flex", marginBottom: 8 }}
+                      align="end"
+                    >
+                      <Form.Item
+                        label="商品图片"
+                        name={[name, "images"]}
+                        valuePropName="fileList"
+                        getValueFromEvent={normFile}
+                        rules={[updateImageValidator]}
+                      >
+                        <UploadImage
+                          changeSubmitBtnLoadings={changeSubmitBtnLoadings}
+                        />
+                      </Form.Item>
+                      {/* 商品编号 */}
+                      <Form.Item
+                        {...restField}
+                        name={[name, "variantSerial"]}
+                        rules={[
+                          { required: true, message: "请输入子商品编号" },
+                        ]}
+                      >
+                        <Input disabled={isExisting} placeholder="子商品编号" />
+                      </Form.Item>
+
+                      {/* 库存数量 */}
+                      <Form.Item
+                        {...restField}
+                        name={[name, "stock"]}
+                        rules={[
+                          { required: true, message: "请输入子商品库存数量" },
+                        ]}
+                      >
+                        <InputNumber placeholder="子商品库存数量" min={0} />
+                      </Form.Item>
+
+                      {/* 删除按钮（当只有一行时禁用） */}
+                      <Button
+                        style={{ marginBottom: "24px" }}
+                        type="text"
+                        danger
+                        onClick={() => remove(name)}
+                      >
+                        删除
+                      </Button>
+                    </Space>
+                  );
+                })}
+
+                {/* 添加按钮 */}
+                <Button
+                  type="dashed"
+                  onClick={() => add()}
+                  style={{ width: "100%" }}
+                >
+                  添加子商品
+                </Button>
+              </>
+            )}
+          </Form.List>
         </Form>
       ) : (
         <></>

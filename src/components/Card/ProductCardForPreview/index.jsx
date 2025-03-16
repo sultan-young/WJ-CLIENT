@@ -8,6 +8,7 @@ import {
   InputNumber,
   message,
   Space,
+  Badge,
 } from "antd";
 import styled from "styled-components";
 import { useAuth } from "../../../context/AuthContext"; // 假设有权限上下文
@@ -26,9 +27,6 @@ import ImageGallery from "../../ImageContainer";
 const DealCard = styled(Card)(({ single }) => ({
   ".ant-card-cover": {
     ...(single ? { maxHeight: "500px !important", height: "500px" } : {}),
-    ".ant-image ": {
-      height: single ? "100%" : 200,
-    },
   },
 }));
 
@@ -46,7 +44,17 @@ const ProductCardForPreview = ({
   const isAdmin = user?.name === "admin";
   // const isAdmin = true;
   const imageUrls = useMemo(() => {
-    return (product?.images || []).map((item) => item.url);
+
+    let urls = []
+    // 如果是商品组的话，优先展示商品组中子商品每张图。如果没有子商品或子商品都没有图，则展示商品组的图
+    if (product.isGroup) {
+      const childImgUrls = (product.children || []).map(item => item.images[0]?.url).filter(url => url);
+      const groupImgUrls = (product?.images || []).map((item) => item.url);
+      urls = childImgUrls.length ? childImgUrls : groupImgUrls
+    } else {
+      urls = [(product?.images || []).map((item) => item.url)[0]]
+    }
+    return urls;
   }, [product]);
 
   const tagsDom = (
@@ -65,22 +73,10 @@ const ProductCardForPreview = ({
       variant="borderless"
       single={isSingleShow || undefined}
       cover={
-        <ImageGallery images={imageUrls}></ImageGallery>
-        // <Image.PreviewGroup
-        //   width={200}
-        //   items={imageUrls}
-        //   style={{
-        //     ...(isSingleShow ? { maxWidth: "400px", maxHeight: "420px" } : {}),
-        //   }}
-        // >
-        //   <Image
-        //     width={200}
-        //     src={imageUrls[0]}
-        //     wrapperStyle={{
-        //       width: "100%",
-        //     }}
-        //   />
-        // </Image.PreviewGroup>
+        <ImageGallery
+          images={imageUrls}
+          height={isSingleShow ? "100%" : "200px"}
+        ></ImageGallery>
       }
       actions={
         isAdmin
@@ -92,11 +88,7 @@ const ProductCardForPreview = ({
               >
                 编辑
               </Button>,
-              <Button
-                size="small"
-                type="link"
-                onClick={() => onCopy(product)}
-              >
+              <Button size="small" type="link" onClick={() => onCopy(product)}>
                 快速复制
               </Button>,
               <Popconfirm
@@ -117,7 +109,11 @@ const ProductCardForPreview = ({
     >
       <Meta
         // avatar={<Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />}
-        title={`${product.nameCn.length > 6 ? product.nameCn.slice(0, 6) : product.nameCn}(${product.sku})`}
+        title={`${
+          product.nameCn.length > 6
+            ? product.nameCn.slice(0, 6)
+            : product.nameCn
+        }(${product.sku})`}
       />
       {/* <Image.PreviewGroup width={200} items={imageUrls}>
         <Image width={200} src={imageUrls[0]} wrapperStyle={{width: "100%"}} />
