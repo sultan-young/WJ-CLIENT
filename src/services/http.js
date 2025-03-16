@@ -19,12 +19,20 @@ http.interceptors.request.use((config) => {
 // 响应拦截器（统一错误处理）
 http.interceptors.response.use(
   (response) => {
-    const { data, success, message: errorMsg } = response.data;
+    const { data, pagination, success, message: errorMsg } = response.data;
     if (!success) {
         message.error(errorMsg || '未知错误');
         return Promise.reject(errorMsg)
     }
-    return data || []
+    // 如果有分页参数
+    if (pagination) {
+      return {
+        pagination,
+        data,
+      }
+    } else {
+      return data || []
+    }
   },
   (error) => {
     const errorMessage =

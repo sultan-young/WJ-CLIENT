@@ -13,7 +13,6 @@ import {
   Upload,
   Space,
   Button,
-  message,
   Statistic,
   Row,
   Col,

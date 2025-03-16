@@ -7,6 +7,8 @@ import {
   Row,
   Col,
   Badge,
+  Skeleton,
+  Divider,
 } from "antd";
 import { getProducts, searchProduct } from "../../services/productService";
 import "./styles.css";
@@ -15,12 +17,18 @@ import { updateProduct, deleteProduct } from "../../services/productService";
 import SearchBox from "../../components/searchBox";
 import ProductCardForPreview from "../../components/Card/ProductCardForPreview";
 import { CHANGE_PRODUCT_MODE } from "./constant";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
-  const [pageLoading, setPageLoading] = useState(false)
+  const [pageLoading, setPageLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    pageSize: 30,
+    pageNo: 1,
+    total: 0,
+  });
   const [createMode, setCreateMode] = useState(
     CHANGE_PRODUCT_MODE.CREATE_PRODUCT
   );
@@ -144,28 +152,40 @@ const ProductList = () => {
    *  搜索时候会获取到普通商品，商品组以及商品组下的子商品
    */
   const loadData = async (searchTerm) => {
-    let data;
-    setPageLoading(true)
+    setPageLoading(true);
     if (searchTerm) {
-      data = await onSearch(searchTerm);
+      await onSearch(searchTerm);
     } else {
-      data = await getProducts();
+      await onFetchPageData();
     }
-    setProducts(data);
-    console.log(111, data)
-    setPageLoading(false)
+
+    setPageLoading(false);
+  };
+
+  const onFetchPageData = async () => {
+    const { pagination: paginationResult, data } = await getProducts({
+      queryParams: {
+        pageNo: pagination.pageNo,
+        pageSize: pagination.pageSize,
+      }
+    });
+    setProducts([...products, ...data]);
+    setPagination({
+      ...paginationResult,
+      pageNo: paginationResult.pageNo + 1,
+    })
   };
 
   const onSearch = async (searchTerm) => {
     const res = await searchProduct({
       queryParams: searchTerm,
     });
-    return res;
+    setProducts(res);
   };
 
   const isSingle = products?.length === 1;
   return (
-    <div className="product-list-page">
+    <div className="product-list-page" id="scrollableDiv">
       <Row
         gutter={6}
         style={{ display: "flex", alignItems: "center", marginBottom: "24px" }}
@@ -173,7 +193,7 @@ const ProductList = () => {
         <Col span={18}>
           <SearchBox
             onSearch={(searchTerm) => {
-              loadData(searchTerm)
+              loadData(searchTerm);
             }}
             style={{ flex: "1 1 0" }}
           ></SearchBox>
@@ -198,22 +218,41 @@ const ProductList = () => {
         </Col>
       </Row>
 
-      <List
-        loading={pageLoading}
-        grid={{
-          gutter: isSingle ? 1 : 12,
-          xs: isSingle ? 1 : 2,
-          sm: isSingle ? 1 : 2,
-          md: isSingle ? 1 : 4,
-          lg: isSingle ? 1 : 4,
-          xl: isSingle ? 1 : 6,
-          xxl: isSingle ? 1 : 8,
-        }}
-        dataSource={products}
-        renderItem={(item) => (
-          <List.Item>
-            {item.isGroup ? (
-              <Badge.Ribbon text="商品组">
+      <InfiniteScroll
+        dataLength={products.length}
+        next={loadData}
+        hasMore={products.length < pagination.total}
+        loader={<Skeleton.Node active={true} />}
+        endMessage={<Divider plain>没有更多了 🤐</Divider>}
+        scrollableTarget="scrollableDiv"
+      >
+        <List
+          loading={pageLoading}
+          grid={{
+            gutter: isSingle ? 1 : 12,
+            xs: isSingle ? 1 : 2,
+            sm: isSingle ? 1 : 2,
+            md: isSingle ? 1 : 4,
+            lg: isSingle ? 1 : 4,
+            xl: isSingle ? 1 : 6,
+            xxl: isSingle ? 1 : 8,
+          }}
+          dataSource={products}
+          renderItem={(item) => (
+            <List.Item>
+              {item.isGroup ? (
+                <Badge.Ribbon text="商品组">
+                  <ProductCardForPreview
+                    product={item}
+                    isSingleShow={!(products?.length > 1)}
+                    onUpdate={() => onClickUpdate(item)}
+                    onSuccessCb={loadData}
+                    onDelete={() => handleDelete(item.id)}
+                    onCopy={() => onCopy(item)}
+                    key={item.id}
+                  />
+                </Badge.Ribbon>
+              ) : (
                 <ProductCardForPreview
                   product={item}
                   isSingleShow={!(products?.length > 1)}
@@ -223,21 +262,12 @@ const ProductList = () => {
                   onCopy={() => onCopy(item)}
                   key={item.id}
                 />
-              </Badge.Ribbon>
-            ) : (
-              <ProductCardForPreview
-                product={item}
-                isSingleShow={!(products?.length > 1)}
-                onUpdate={() => onClickUpdate(item)}
-                onSuccessCb={loadData}
-                onDelete={() => handleDelete(item.id)}
-                onCopy={() => onCopy(item)}
-                key={item.id}
-              />
-            )}
-          </List.Item>
-        )}
-      />
+              )}
+            </List.Item>
+          )}
+        />
+      </InfiniteScroll>
+
       <Drawer
         title={createDrawerInfo.title}
         width={720}
