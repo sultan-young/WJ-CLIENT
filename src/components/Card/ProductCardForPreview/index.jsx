@@ -20,6 +20,7 @@ import {
 } from "@ant-design/icons";
 import { useMemo, useState } from "react";
 import { updateProduct } from "../../../services/productService";
+import ImageGallery from "../../ImageContainer";
 
 // 使用 props 动态设置样式
 const DealCard = styled(Card)(({ single }) => ({
@@ -64,21 +65,22 @@ const ProductCardForPreview = ({
       variant="borderless"
       single={isSingleShow || undefined}
       cover={
-        <Image.PreviewGroup
-          width={200}
-          items={imageUrls}
-          style={{
-            ...(isSingleShow ? { maxWidth: "400px", maxHeight: "420px" } : {}),
-          }}
-        >
-          <Image
-            width={200}
-            src={imageUrls[0]}
-            wrapperStyle={{
-              width: "100%",
-            }}
-          />
-        </Image.PreviewGroup>
+        <ImageGallery images={imageUrls}></ImageGallery>
+        // <Image.PreviewGroup
+        //   width={200}
+        //   items={imageUrls}
+        //   style={{
+        //     ...(isSingleShow ? { maxWidth: "400px", maxHeight: "420px" } : {}),
+        //   }}
+        // >
+        //   <Image
+        //     width={200}
+        //     src={imageUrls[0]}
+        //     wrapperStyle={{
+        //       width: "100%",
+        //     }}
+        //   />
+        // </Image.PreviewGroup>
       }
       actions={
         isAdmin

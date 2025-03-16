@@ -25,13 +25,10 @@ import {
   PlusOutlined,
   MinusCircleOutlined,
 } from "@ant-design/icons";
-import "./styles.css";
-import axios from "axios";
+import styles from "./index.module.less";
 import {
   createProduct,
-  deleteProductImage,
   getProductCategoryList,
-  getUploadProductImageSign,
   updateProduct,
 } from "../../../services/productService";
 import {
@@ -45,44 +42,43 @@ import { CHANGE_PRODUCT_MODE } from "../constant";
 import { updateImageValidator } from "../common";
 import UploadImage from "../../../components/UploadImages";
 
-
 const renderDiscountPanelItems = (price = 0) => {
   let _price = (Number(price) || 0).toFixed(2);
   return [
     {
       key: "1",
       label: (
-        <div className="discount-item">
+        <div className={styles['discount-item']}>
           <span>9折预估利润</span> <span>${_price * 0.9}</span>
         </div>
       ),
       children: (
-        <div className="discount">
-          <div className="discount-item">
+        <div className={styles['discount']}>
+          <div className={styles['discount-item']}>
             <span>8折预估利润 </span>{" "}
             <span>
               {_price * 0.8}￥({rmb2usd(_price * 0.8)}$)
             </span>
           </div>
-          <div className="discount-item">
+          <div className={styles['discount-item']}>
             <span>7折预估利润</span>{" "}
             <span>
               {_price * 0.7}￥ ({rmb2usd(_price * 0.7)}$)
             </span>
           </div>
-          <div className="discount-item">
+          <div className={styles['discount-item']}>
             <span>6折预估利润</span>{" "}
             <span>
               {_price * 0.6}￥ ({rmb2usd(_price * 0.6)}$)
             </span>
           </div>
-          <div className="discount-item">
+          <div className={styles['discount-item']}>
             <span>5折预估利润</span>{" "}
             <span>
               {_price * 0.5}￥ ({rmb2usd(_price * 0.5)}$)
             </span>
           </div>
-          <div className="discount-item">
+          <div className={styles['discount-item']}>
             <span>4折预估利润</span>{" "}
             <span>
               {_price * 0.4}￥ ({rmb2usd(_price * 0.4)}$)
@@ -99,6 +95,7 @@ const ProductForm = forwardRef((props, ref) => {
 
   // 基础配置
   const [baseForm] = Form.useForm();
+  const [childrenForm] = Form.useForm();
   // 监听 Radio 值变化
   // const hasVariant = Form.useWatch("hasVariant", form);
   // 监听价格是否关联供应商
@@ -127,8 +124,6 @@ const ProductForm = forwardRef((props, ref) => {
       CHANGE_PRODUCT_MODE.UPDATE_PRODUCT_GROUP,
     ].includes(createMode);
   }, [createMode]);
-
-  console.log(isGroupMode, "isGroupMode");
 
   // 组件状态
   // TODO: 这里可优化，tags还未加入到form中
@@ -185,7 +180,7 @@ const ProductForm = forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
     // create 创建 update 更新
     submit: async () => {
-      await handleSubmit();
+      return await handleSubmit();
     },
     reset: () => baseForm.resetFields(),
     validateFields: async () => {
@@ -206,20 +201,10 @@ const ProductForm = forwardRef((props, ref) => {
     if (initialValues) {
       const _values = {
         ...initialValues,
-        images: (initialValues.images || []),
+        images: initialValues.images || [],
       };
       baseForm.setFieldsValue(_values);
       setTags(initialValues.tags || []);
-      // const images = (initialValues.images || []).map(
-      //   ({ url, uid, name, picturebedId }) => ({
-      //     url,
-      //     name,
-      //     status: "done",
-      //     uid,
-      //     picturebedId,
-      //   })
-      // );
-      // imageUrlList = images;
       autoCalculateProfit();
     } else {
       resetAll();
@@ -253,7 +238,6 @@ const ProductForm = forwardRef((props, ref) => {
   const formatSubmitData = (values) => ({
     ...values,
     tags,
-    // images: imageUrlList,
     suppliers: values.suppliers || [],
     category: values.category,
   });
@@ -268,11 +252,13 @@ const ProductForm = forwardRef((props, ref) => {
 
   // 提交处理
   const handleSubmit = async () => {
+    if (isGroupMode) {
+      return await handleGroupCreate();
+    }
     await baseForm.validateFields();
     try {
       setLoading(true);
       const productData = formatSubmitData(baseForm.getFieldValue());
-      console.log(productData, 'productData', baseForm.getFieldsValue())
       if (
         [
           CHANGE_PRODUCT_MODE.CREATE_PRODUCT,
@@ -286,24 +272,31 @@ const ProductForm = forwardRef((props, ref) => {
       }
       resetAll();
       onSubmitSuccess?.();
+      return true;
       // if (!initialValues) baseForm.resetFields();
     } finally {
       setLoading(false);
     }
   };
+  const handleGroupCreate = async () => {
+    await Promise.all([childrenForm.validateFields(), baseForm.validateFields()])
+    // setLoading(true);
+    const groupData = {
+      ...formatSubmitData(baseForm.getFieldValue()),
+      isGroup: true,
+      children: [
+        childrenForm.getFieldValue(),
+      ]
+    }
+    await createProduct(groupData);
 
-  // 图片上传验证
-  const beforeUpload = (file) => {
-    const isImage = file.type.startsWith("image/");
-    if (!isImage) message.error("只能上传图片文件");
-    return isImage ? true : Upload.LIST_IGNORE;
+    return false;
   };
 
   const changeSubmitBtnLoadings = (loading) => {
     setSubmitBtnLoadings(loading);
     toggleSubmitBtnLoadings?.(loading);
   };
-
 
   const onSelectSupplierChange = (value, option, v) => {
     // 获取当前 formList 的值
@@ -419,11 +412,11 @@ const ProductForm = forwardRef((props, ref) => {
               ) : (
                 <Form.List name="costSuppliersLinkPricesRMB">
                   {(fields) => (
-                    <div className="linkPriceContainer">
-                      <div className="linkPriceContainer-title">
+                    <div className={styles["linkPriceContainer"]}>
+                      <div className={styles["linkPriceContainer-title"]}>
                         各个供应商合作价(￥)
                       </div>
-                      <div className="linkPriceContainer-wrap">
+                      <div className={styles["linkPriceContainer-wrap"]}>
                         {fields.map(({ key, name, ...restField }) => {
                           // 获取当前项的 供应商名称
                           const supplierName = baseForm.getFieldValue([
@@ -486,17 +479,17 @@ const ProductForm = forwardRef((props, ref) => {
             </Row>
           </Col>
           <Col span={12}>
-            <div className="profit-container">
-              <div className="profit-container-title">利润试算</div>
-              <div className="profit-container-item">
+            <div className={styles["profit-container"]}>
+              <div className={styles["profit-container-title"]}>利润试算</div>
+              <div className={styles["profit-container-item"]}>
                 <span>毛利率</span>
                 <span>{profitData.grossProfitMargin || "--"}%</span>
               </div>
-              {/* <div className="profit-container-item">
+              {/* <div className={styles["profit-container-item"]}>
               <span>净利率</span>
               <span>{profitData.netProfitMargin || "--"}%</span>
             </div> */}
-              <div className="profit-container-item">
+              <div className={styles["profit-container-item"]}>
                 <span>预估利润</span>
                 <span>{profitData.profit || "--"}￥</span>
               </div>
@@ -575,18 +568,18 @@ const ProductForm = forwardRef((props, ref) => {
           getValueFromEvent={normFile}
           rules={[updateImageValidator]}
         >
-          <UploadImage changeSubmitBtnLoadings={changeSubmitBtnLoadings}/>
+          <UploadImage changeSubmitBtnLoadings={changeSubmitBtnLoadings} />
         </Form.Item>
 
         {/* 标签管理 */}
         <Form.Item name="tags" label="商品标签">
-          <div className="tag-manager">
+          <div className={styles["tag-manager"]}>
             <Select
               mode="tags"
               value={tags}
               onChange={setTags}
               dropdownRender={() => (
-                <div className="tag-input-wrapper">
+                <div className={styles["tag-input-wrapper"]}>
                   <Input
                     value={inputTag}
                     onChange={(e) => setInputTag(e.target.value)}
@@ -627,11 +620,45 @@ const ProductForm = forwardRef((props, ref) => {
           </Form.Item>
         )}
       </Form>
-      <Form>
-        <Form.Item>
-          
-        </Form.Item>
-      </Form>
+      {isGroupMode ? (
+        <Form
+          form={childrenForm}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{
+            stock: 0,
+          }}
+        >
+          <div>录入子商品</div>
+          <Row>
+            <Form.Item
+              label="商品图片"
+              name="images"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+            >
+              <UploadImage changeSubmitBtnLoadings={changeSubmitBtnLoadings} />
+            </Form.Item>
+            <Form.Item
+              label="子商品编号"
+              rules={[{ required: true, message: "商品编号为必填" }]}
+              name="variantSerial"
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="库存数量"
+              name="stock"
+              tooltip="子商品库存"
+              rules={[{ required: true, message: "请输入库存数量" }]}
+            >
+              <InputNumber min={0} />
+            </Form.Item>
+          </Row>
+        </Form>
+      ) : (
+        <></>
+      )}
     </>
   );
 });

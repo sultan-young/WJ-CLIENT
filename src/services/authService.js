@@ -14,7 +14,6 @@ export const supplierLogin = async (credentials) => {
 export const adminLogin = async (credentials) => {
   try {
     const response = await http.post('/auth/login/admin', credentials);
-    console.log(response, 111)
     const { token, userInfo } = response;
     console.log(token, userInfo)
     // 存储 Token 和用户信息

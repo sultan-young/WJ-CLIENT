@@ -20,53 +20,54 @@ import OrderList from "../orders/orderList";
 import ProductCardForPreview from "../../components/Card/ProductCardForPreview";
 import { CHANGE_PRODUCT_MODE } from "./constant";
 
-
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [filters, setFilters] = useState({});
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [submitBtnLoadings, setSubmitBtnLoadings] = useState(false);
-  const [ createMode, setCreateMode] = useState(CHANGE_PRODUCT_MODE.CREATE_PRODUCT)
+  const [createMode, setCreateMode] = useState(
+    CHANGE_PRODUCT_MODE.CREATE_PRODUCT
+  );
 
   const createDrawerInfo = useMemo(() => {
     if (createMode === CHANGE_PRODUCT_MODE.CREATE_PRODUCT) {
       return {
-        title: '录入商品',
-        submitBtn: '创建'
-      }
+        title: "录入商品",
+        submitBtn: "创建",
+      };
     }
     if (createMode === CHANGE_PRODUCT_MODE.UPDATE_PRODUCT) {
       return {
         title: `更新商品 - ${selectedProduct?.sku || ""}`,
-        submitBtn: '更新'
-      }
+        submitBtn: "更新",
+      };
     }
     if (createMode === CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT) {
       return {
         title: `以[${selectedProduct.nameCn}]为模板快速创建`,
-        submitBtn: '创建'
-      }
+        submitBtn: "创建",
+      };
     }
 
     if (createMode === CHANGE_PRODUCT_MODE.CREATE_PRODUCT_GROUP) {
       return {
-        title: '录入商品组',
-        submitBtn: '创建商品组'
-      }
+        title: "录入商品组",
+        submitBtn: "创建商品组",
+      };
     }
     if (createMode === CHANGE_PRODUCT_MODE.UPDATE_PRODUCT_GROUP) {
       return {
         title: `更新商品组 - ${selectedProduct?.sku || ""}`,
-        submitBtn: '更新商品组'
-      }
+        submitBtn: "更新商品组",
+      };
     }
     if (createMode === CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT_GROUP) {
       return {
         title: `以[${selectedProduct.nameCn}]为模板快速创建商品组`,
-        submitBtn: '快速创建商品组'
-      }
+        submitBtn: "快速创建商品组",
+      };
     }
-  }, [createMode, selectedProduct])
+  }, [createMode, selectedProduct]);
 
   // 处理删除操作
   const handleDelete = async (productId) => {
@@ -91,32 +92,34 @@ const ProductList = () => {
 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRef = useRef();
-  console.log(formRef.current, 111)
 
   const handleDrawerSubmit = async (mode) => {
     try {
-      await formRef.current.submit(mode);
-      loadData();
-      setDrawerVisible(false);
+      const result = await formRef.current.submit(mode);
+      if (result) {
+        loadData();
+        setDrawerVisible(false);
+      }
     } catch (error) {
       console.error("表单验证失败");
     }
   };
 
   const handleCreate = async (mode) => {
-    setCreateMode(mode)
-    setDrawerVisible(true)
+    setCreateMode(mode);
+    setDrawerVisible(true);
     setSelectedProduct(null);
-  }
+  };
 
   const onClickUpdate = (productInfo) => {
-    setCreateMode(CHANGE_PRODUCT_MODE.UPDATE_PRODUCT)
+    setCreateMode(CHANGE_PRODUCT_MODE.UPDATE_PRODUCT);
     setSelectedProduct(productInfo);
-    setDrawerVisible(true)
+    setDrawerVisible(true);
   };
 
   // 快速复制同类商品用于创建
   const onCopy = (productInfo) => {
+    console.log(productInfo, 'productInfo')
     const newProductInfoTemp = {
       ...productInfo,
     };
@@ -128,9 +131,9 @@ const ProductList = () => {
     // newProductInfoTemp.nameEn = "";
     newProductInfoTemp.images = [];
     newProductInfoTemp.variantSerial = "";
-    setCreateMode(CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT)
+    setCreateMode(CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT);
     setSelectedProduct(newProductInfoTemp);
-    setDrawerVisible(true)
+    setDrawerVisible(true);
   };
 
   const toggleSubmitBtnLoadings = (loading) => {
@@ -169,7 +172,9 @@ const ProductList = () => {
           </Button>
           <Button
             type="primary"
-            onClick={() => handleCreate(CHANGE_PRODUCT_MODE.CREATE_PRODUCT_GROUP)}
+            onClick={() =>
+              handleCreate(CHANGE_PRODUCT_MODE.CREATE_PRODUCT_GROUP)
+            }
             className="add-button"
           >
             录入商品组
