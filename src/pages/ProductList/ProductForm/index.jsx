@@ -96,18 +96,8 @@ const ProductForm = forwardRef((props, ref) => {
   // 基础配置
   const [baseForm] = Form.useForm();
   const [childrenForm] = Form.useForm();
-  // 监听 Radio 值变化
-  // const hasVariant = Form.useWatch("hasVariant", form);
   // 监听价格是否关联供应商
   const isPriceLinkSuppliers = Form.useWatch("priceLinkSuppliers", baseForm);
-
-  // 当隐藏输入框时，清除字段值和校验信息
-  // useEffect(() => {
-  //   if (hasVariant !== 1) {
-  //     form.setFieldsValue({ variantSerial: undefined }); // 清除输入框值
-  //     form.validateFields(["variantSerial"]); // 清除校验状态
-  //   }
-  // }, [hasVariant, form]);
 
   const {
     initialValues,
@@ -220,7 +210,15 @@ const ProductForm = forwardRef((props, ref) => {
       setTags(initialValues.tags || []);
       if (isGroupMode) {
         childrenForm.setFieldsValue({
-          subProducts: initialValues.children,
+          subProducts: initialValues.children.map(child => {
+            const { id, stock, images, variantSerial} = child;
+            return {
+              id,
+              stock,
+              images,
+              variantSerial,
+            }
+          }),
         });
       }
       autoCalculateProfit();
@@ -269,7 +267,6 @@ const ProductForm = forwardRef((props, ref) => {
       validateList.push(childrenForm.validateFields());
     }
     await Promise.all(validateList);
-
     try {
       setLoading(true);
       const ProductData = {
@@ -278,7 +275,18 @@ const ProductForm = forwardRef((props, ref) => {
       };
       if (isGroupMode) {
         ProductData.isGroup = true;
-        ProductData.children = childrenForm.getFieldValue()?.subProducts || [];
+        ProductData.children = (
+          (childrenForm.getFieldValue()?.subProducts || []).map((child) => {
+            const { variantSerial, ...resetFields} = child;
+            let obj = resetFields;
+
+            // 如果为创建组上模式，需要将子商品编号拼上去
+            if (!isUpdateMode) {
+              obj.variantSerial = variantSerial;
+            }
+            return obj;
+          })
+        )
       }
       if (isCreateOrCopyMode) {
         await createProduct(ProductData);
@@ -338,7 +346,6 @@ const ProductForm = forwardRef((props, ref) => {
           stock: 0,
           price: 0,
           shippingFeeRMB: 35,
-          hasVariant: 0,
           priceLinkSuppliers: 0,
         }}
       >
@@ -532,36 +539,6 @@ const ProductForm = forwardRef((props, ref) => {
           </Form.Item>
         </Space>
 
-        {/* <Row gutter={5}>
-        <Col>
-          <Form.Item
-            name="hasVariant"
-            label="是否有变体"
-            tooltip="如果选中有变体，则需要输入一个编号，此编号将被追加到sku后，例如A-0001-N1。N1为自定义信息，例如此处的N1代表制作为项链，链条款式为N1"
-          >
-            <Radio.Group>
-              <Radio value={0}> 无变体 </Radio>
-              <Radio value={1}> 有变体 </Radio>
-            </Radio.Group>
-          </Form.Item>
-        </Col>
-        <Col>
-          {hasVariant ? (
-            <Form.Item
-              label="变体编号"
-              rules={[
-                { required: true, message: "选中变体时候，必须输入编号" },
-              ]}
-              name="variantSerial"
-            >
-              <Input placeholder="请输入变体编号，此编号将被追加到sku后，例如A-0001-N1。" />
-            </Form.Item>
-          ) : (
-            <></>
-          )}
-        </Col>
-      </Row> */}
-
         {/* 图片上传 */}
         <Form.Item
           label="商品图片"
@@ -633,7 +610,7 @@ const ProductForm = forwardRef((props, ref) => {
                   const isExisting = childrenForm.getFieldValue([
                     "subProducts",
                     name,
-                    "variantSerial",
+                    "id",
                   ]);
                   return (
                     <Space
@@ -642,7 +619,7 @@ const ProductForm = forwardRef((props, ref) => {
                       align="end"
                     >
                       <Form.Item
-                        label="商品图片"
+                        label="子商品图片"
                         name={[name, "images"]}
                         valuePropName="fileList"
                         getValueFromEvent={normFile}
@@ -656,11 +633,12 @@ const ProductForm = forwardRef((props, ref) => {
                       <Form.Item
                         {...restField}
                         name={[name, "variantSerial"]}
+                        style={{width: '100px'}}
                         rules={[
-                          { required: true, message: "请输入子商品编号" },
+                          { required: true, message: "子商品编号" },
                         ]}
                       >
-                        <Input disabled={isExisting} placeholder="子商品编号" />
+                        <Input maxLength={6} disabled={isExisting} placeholder="子商品编号" />
                       </Form.Item>
 
                       {/* 库存数量 */}
@@ -668,10 +646,10 @@ const ProductForm = forwardRef((props, ref) => {
                         {...restField}
                         name={[name, "stock"]}
                         rules={[
-                          { required: true, message: "请输入子商品库存数量" },
+                          { required: true, message: "请输入库存数量" },
                         ]}
                       >
-                        <InputNumber placeholder="子商品库存数量" min={0} />
+                        <InputNumber placeholder="库存数量" min={0} />
                       </Form.Item>
 
                       {/* 删除按钮（当只有一行时禁用） */}

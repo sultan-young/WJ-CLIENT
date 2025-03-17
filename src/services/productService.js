@@ -40,7 +40,6 @@ export const deleteProduct = async (id) => {
 };
 
 export const updateProduct = async (productData) => {
-  // 模拟更新请求
   const result = await http.post('/products/update', productData)
   return {
     data: result

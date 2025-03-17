@@ -77,8 +77,8 @@ const ProductList = () => {
   const handleDelete = async (productId) => {
     try {
       await deleteProduct(productId);
-      message.info("删除成功");
-      loadData();
+      message.success("删除成功");
+      refreshPageData();
       // 这里需要更新商品列表状态或重新获取数据
     } catch (error) {
       message.error("删除失败");
@@ -86,7 +86,7 @@ const ProductList = () => {
   };
 
   useEffect(() => {
-    loadData();
+    refreshPageData();
   }, []);
 
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -96,11 +96,11 @@ const ProductList = () => {
     try {
       const result = await formRef.current.submit(mode);
       if (result) {
-        loadData();
+        refreshPageData();
         setDrawerVisible(false);
       }
     } catch (error) {
-      console.error("表单验证失败");
+      console.error(error);
     }
   };
 
@@ -111,12 +111,13 @@ const ProductList = () => {
   };
 
   const onClickUpdate = (productInfo) => {
+    let _productInfo = { ...productInfo };
     setCreateMode(
       productInfo.isGroup
         ? CHANGE_PRODUCT_MODE.UPDATE_PRODUCT_GROUP
         : CHANGE_PRODUCT_MODE.UPDATE_PRODUCT
     );
-    setSelectedProduct(productInfo);
+    setSelectedProduct(_productInfo);
     setDrawerVisible(true);
   };
 
@@ -125,14 +126,15 @@ const ProductList = () => {
     const newProductInfoTemp = {
       ...productInfo,
     };
-    const { hasVariant } = newProductInfoTemp;
-    if (hasVariant === 0) {
-      delete newProductInfoTemp.sku;
-    }
     // newProductInfoTemp.nameCn = "";
     // newProductInfoTemp.nameEn = "";
     newProductInfoTemp.images = [];
     newProductInfoTemp.variantSerial = "";
+    newProductInfoTemp.sku = "";
+    if (productInfo.isGroup) {
+      newProductInfoTemp.children = [];
+    }
+    console.log(newProductInfoTemp, "newProductInfoTemp");
     setCreateMode(
       productInfo.isGroup
         ? CHANGE_PRODUCT_MODE.QUICKCOPY_PRODUCT_GROUP
@@ -146,35 +148,59 @@ const ProductList = () => {
     setSubmitBtnLoadings(loading);
   };
 
+  const refreshPageData = async () => {
+    console.log('刷新')
+    setPagination({
+      pageNo: 1,
+      pageSize: 30,
+      total: 0,
+    });
+    setProducts([])
+    loadProductData()
+  }
+
   /**
    *  搜索和获取商品列表的区别在于
    *  获取商品列表时候，只会获取到商品组和普通商品。
    *  搜索时候会获取到普通商品，商品组以及商品组下的子商品
    */
-  const loadData = async (searchTerm) => {
+  const loadProductData = async (searchTerm) => {
     setPageLoading(true);
-    if (searchTerm) {
+    // 如果输入框有搜索词，则为搜索模式。
+    if (searchTerm && searchTerm.content) {
       await onSearch(searchTerm);
     } else {
-      await onFetchPageData();
+      await fetchPageData();
     }
-
     setPageLoading(false);
   };
 
-  const onFetchPageData = async () => {
-    const { pagination: paginationResult, data } = await getProducts({
+  const fetchPageData = async () => {
+    const { pagination: {total}, data } = await getProducts({
       queryParams: {
         pageNo: pagination.pageNo,
         pageSize: pagination.pageSize,
-      }
+      },
     });
-    setProducts([...products, ...data]);
+
+    console.log('products,', products)
+    setTimeout(() => {
+      setProducts([...products, ...data]);
     setPagination({
-      ...paginationResult,
-      pageNo: paginationResult.pageNo + 1,
+      ...pagination,
+      total
     })
+    }, 2000);
   };
+
+  const loadMorePageData = async () => {
+    setPagination({
+      ...pagination,
+      pageNo: pagination.pageNo + 1,
+    });
+    fetchPageData()
+  };
+
 
   const onSearch = async (searchTerm) => {
     const res = await searchProduct({
@@ -193,7 +219,7 @@ const ProductList = () => {
         <Col span={18}>
           <SearchBox
             onSearch={(searchTerm) => {
-              loadData(searchTerm);
+              loadProductData(searchTerm);
             }}
             style={{ flex: "1 1 0" }}
           ></SearchBox>
@@ -220,7 +246,7 @@ const ProductList = () => {
 
       <InfiniteScroll
         dataLength={products.length}
-        next={loadData}
+        next={loadMorePageData}
         hasMore={products.length < pagination.total}
         loader={<Skeleton.Node active={true} />}
         endMessage={<Divider plain>没有更多了 🤐</Divider>}
@@ -246,7 +272,7 @@ const ProductList = () => {
                     product={item}
                     isSingleShow={!(products?.length > 1)}
                     onUpdate={() => onClickUpdate(item)}
-                    onSuccessCb={loadData}
+                    onSuccessCb={refreshPageData}
                     onDelete={() => handleDelete(item.id)}
                     onCopy={() => onCopy(item)}
                     key={item.id}
@@ -257,7 +283,7 @@ const ProductList = () => {
                   product={item}
                   isSingleShow={!(products?.length > 1)}
                   onUpdate={() => onClickUpdate(item)}
-                  onSuccessCb={loadData}
+                  onSuccessCb={refreshPageData}
                   onDelete={() => handleDelete(item.id)}
                   onCopy={() => onCopy(item)}
                   key={item.id}
