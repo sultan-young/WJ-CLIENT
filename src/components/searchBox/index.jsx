@@ -6,6 +6,11 @@ import "./styles.css"; // 创建对应的CSS文件
 const SearchBox = ({ onSearch }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [defaultItem, setDefaultItem] = useState(0);
+  const timeoutRef = useRef(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const inputRef = useRef(null);
+  const idleTimerRef = useRef();
+  const debounceTimerRef = useRef();
 
   const handleSubmit = (e) => {
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
@@ -18,19 +23,8 @@ const SearchBox = ({ onSearch }) => {
     e.preventDefault();
   };
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const inputRef = useRef(null);
-  const idleTimerRef = useRef();
-  const debounceTimerRef = useRef();
 
-  // 执行搜索逻辑
-  const performSearch = useCallback(() => {
-    const data = {
-      type: defaultItem,
-      content: searchTerm.trim(),
-    };
-    onSearch(data);
-  }, [searchTerm, onSearch]);
+
 
   // 自动聚焦逻辑
   const autoFocus = useCallback(() => {
@@ -43,13 +37,31 @@ const SearchBox = ({ onSearch }) => {
     idleTimerRef.current = setTimeout(autoFocus, 10000); // 10秒无操作后聚焦
   }, [autoFocus]);
 
-  // 防抖搜索
-  // useEffect(() => {
-  //   debounceTimerRef.current = setTimeout(performSearch, 1000);
-  //   return () => {
-  //     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-  //   };
-  // }, [searchTerm, performSearch]);
+  const debouncedSearch = useCallback((value) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      onSearch({
+      type: defaultItem,
+      content: value,
+    });
+    }, 500); // 500毫秒防抖时间
+  }, []);
+
+  // 组件卸载时清除定时器
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const clearSearchTerm = () => {
+    setSearchTerm('')
+    onSearch()
+  }
 
   // 初始化和事件监听
   useEffect(() => {
@@ -116,14 +128,18 @@ const SearchBox = ({ onSearch }) => {
           autoFocus
           value={searchTerm}
           ref={inputRef}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSearchTerm(value)
+            debouncedSearch(value);
+          }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="可通过SKU, 供应商名称，商品名称等进行模糊搜索"
           className="search-input"
           aria-label="Search"
         />
-        {searchTerm ? <CloseCircleOutlined onClick={() => setSearchTerm('')} style={{padding: '10px'}} /> : null}
+        {searchTerm ? <CloseCircleOutlined onClick={clearSearchTerm} style={{padding: '10px'}} /> : null}
         <button type="submit" className="search-button">
           <svg
             className="search-icon"

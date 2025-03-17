@@ -44,15 +44,16 @@ const ProductCardForPreview = ({
   const isAdmin = user?.name === "admin";
   // const isAdmin = true;
   const imageUrls = useMemo(() => {
-
-    let urls = []
+    let urls = [];
     // 如果是商品组的话，优先展示商品组中子商品每张图。如果没有子商品或子商品都没有图，则展示商品组的图
     if (product.isGroup) {
-      const childImgUrls = (product.children || []).map(item => item.images[0]?.url).filter(url => url);
+      const childImgUrls = (product.children || [])
+        .map((item) => item.images[0]?.url)
+        .filter((url) => url);
       const groupImgUrls = (product?.images || []).map((item) => item.url);
-      urls = childImgUrls.length ? childImgUrls : groupImgUrls
+      urls = childImgUrls.length ? childImgUrls : groupImgUrls;
     } else {
-      urls = [(product?.images || []).map((item) => item.url)[0]]
+      urls = [(product?.images || []).map((item) => item.url)[0]];
     }
     return urls;
   }, [product]);
@@ -92,7 +93,7 @@ const ProductCardForPreview = ({
                 快速复制
               </Button>,
               <Popconfirm
-                title="确定要删除这个商品吗？"
+                title={product.isGroup ? "您正在删除一个商品组，删除商品组之后，所有的子商品将被删除，请慎重！！！" : "确定要删除这个商品吗？"}
                 icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
                 onConfirm={() => onDelete(product.id)}
                 okText="确定"

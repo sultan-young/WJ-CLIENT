@@ -39,7 +39,6 @@ import {
 } from "../../../utils/calculateProfit";
 import { usePreloadData } from "../../../context/AppContext";
 import { CHANGE_PRODUCT_MODE } from "../constant";
-import { updateImageValidator } from "../common";
 import UploadImage from "../../../components/UploadImages";
 
 const renderDiscountPanelItems = (price = 0) => {
@@ -210,14 +209,14 @@ const ProductForm = forwardRef((props, ref) => {
       setTags(initialValues.tags || []);
       if (isGroupMode) {
         childrenForm.setFieldsValue({
-          subProducts: initialValues.children.map(child => {
-            const { id, stock, images, variantSerial} = child;
+          subProducts: initialValues.children.map((child) => {
+            const { id, stock, images, variantSerial } = child;
             return {
               id,
               stock,
               images,
               variantSerial,
-            }
+            };
           }),
         });
       }
@@ -275,18 +274,7 @@ const ProductForm = forwardRef((props, ref) => {
       };
       if (isGroupMode) {
         ProductData.isGroup = true;
-        ProductData.children = (
-          (childrenForm.getFieldValue()?.subProducts || []).map((child) => {
-            const { variantSerial, ...resetFields} = child;
-            let obj = resetFields;
-
-            // 如果为创建组上模式，需要将子商品编号拼上去
-            if (!isUpdateMode) {
-              obj.variantSerial = variantSerial;
-            }
-            return obj;
-          })
-        )
+        ProductData.children = childrenForm.getFieldValue()?.subProducts || [];
       }
       if (isCreateOrCopyMode) {
         await createProduct(ProductData);
@@ -334,6 +322,32 @@ const ProductForm = forwardRef((props, ref) => {
     // 更新 formList 字段
     baseForm.setFieldsValue({ costSuppliersLinkPricesRMB: newItems });
   };
+
+  const updateImageValidator = () => ({
+    validator(_, fileList) {
+      // 组模式下，子商品和组商品可以只上传一个
+      if (isGroupMode) {
+        const isGroupImageExist = !!(baseForm.getFieldValue("images") || [])
+          .length;
+        const childrenFormImages = (
+          childrenForm.getFieldValue("subProducts") || []
+        ).filter((item) => item);
+        const isAllChildImageExist =
+          childrenFormImages.length &&
+          childrenFormImages.every((item) => (item.images || []).length);
+
+        // 所有子商品上传图片后，组商品可以不传
+        // // 当组商品上传图片后，子商品图片选传
+        if (isAllChildImageExist || isGroupImageExist) {
+          return Promise.resolve();
+        }
+      }
+      if ((fileList || []).length >= 1) {
+        return Promise.resolve();
+      }
+      return Promise.reject(new Error("至少上传一张图片"));
+    },
+  });
 
   return (
     <>
@@ -545,7 +559,7 @@ const ProductForm = forwardRef((props, ref) => {
           name="images"
           valuePropName="fileList"
           getValueFromEvent={normFile}
-          rules={[isGroupMode ? null : updateImageValidator]}
+          rules={[updateImageValidator]}
         >
           <UploadImage changeSubmitBtnLoadings={changeSubmitBtnLoadings} />
         </Form.Item>
@@ -633,21 +647,31 @@ const ProductForm = forwardRef((props, ref) => {
                       <Form.Item
                         {...restField}
                         name={[name, "variantSerial"]}
-                        style={{width: '100px'}}
+                        style={{ width: "100px" }}
                         rules={[
-                          { required: true, message: "子商品编号" },
+                          {
+                            required: true,
+                            message: "子商品编号",
+                            
+                          },
+                          {
+                            pattern: /^[A-Za-z0-9]*$/,
+                            message: '只能输入字母和数字'
+                          }
                         ]}
                       >
-                        <Input maxLength={6} disabled={isExisting} placeholder="子商品编号" />
+                        <Input
+                          maxLength={6}
+                          disabled={isExisting}
+                          placeholder="子商品编号"
+                        />
                       </Form.Item>
 
                       {/* 库存数量 */}
                       <Form.Item
                         {...restField}
                         name={[name, "stock"]}
-                        rules={[
-                          { required: true, message: "请输入库存数量" },
-                        ]}
+                        rules={[{ required: true, message: "请输入库存数量" }]}
                       >
                         <InputNumber placeholder="库存数量" min={0} />
                       </Form.Item>
