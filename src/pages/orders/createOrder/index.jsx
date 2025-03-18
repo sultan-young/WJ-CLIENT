@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { usePreloadData } from "../../../context/AppContext";
 import { Button, Steps, message, Drawer, Space } from "antd";
-import "./index.css";
+import "./index.less";
 import ExportForm from "./exportOrder";
 import Step1WithSupplier from "./Step1WithSupplier";
 import Step2WithOrder from "./Step2WithOrder";

@@ -395,6 +395,8 @@ const ProductForm = forwardRef((props, ref) => {
               <Select
                 mode="multiple"
                 onChange={onSelectSupplierChange}
+                showSearch={true}
+                optionFilterProp="label"
                 placeholder="选择供应商"
                 options={suppliersOption}
               />
@@ -652,12 +654,11 @@ const ProductForm = forwardRef((props, ref) => {
                           {
                             required: true,
                             message: "子商品编号",
-                            
                           },
                           {
                             pattern: /^[A-Za-z0-9]*$/,
-                            message: '只能输入字母和数字'
-                          }
+                            message: "只能输入字母和数字",
+                          },
                         ]}
                       >
                         <Input

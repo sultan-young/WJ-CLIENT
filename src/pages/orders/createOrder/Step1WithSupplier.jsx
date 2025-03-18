@@ -13,7 +13,7 @@ const Step1WithSupplier = forwardRef(({ suppliers }, ref) => {
         name="supplier"
         rules={[{ required: true, message: "请选择供应商" }]}
       >
-        <Select options={supplierOptions} />
+        <Select showSearch={true} optionFilterProp="label" options={supplierOptions} />
       </Form.Item>
     </Form>
   );

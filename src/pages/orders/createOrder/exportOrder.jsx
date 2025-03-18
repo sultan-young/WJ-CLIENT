@@ -4,6 +4,7 @@ import {
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import html2canvas from "html2canvas";
 import dayjs from "dayjs";
@@ -11,7 +12,7 @@ import { jsPDF } from "jspdf";
 import { Button, Row, Col } from "antd";
 import { useAuth } from "../../../context/AuthContext"; // 假设有权限上下文
 import { exportImage } from "../../../services/productService";
-import "./index.css";
+import "./index.less";
 
 const ExportOrder = forwardRef(
   ({ supplierForm, orderForm, shippingDate, suppliers }, ref) => {
@@ -78,14 +79,67 @@ const ExportOrder = forwardRef(
       preloadImages();
     }, []);
 
-    const getProductPrice = (item) => {
+
+    // 先获取自身的价格，如果获取不到，去获取父级的价格
+    const getProductPrice = (item, parentProduct) => {
       let price = item.costPriceRMB;
 
+      // FIXME: 未被拆出来的子元素没有自己的priceLinkSuppliers属性
+      console.log(price, item.sku, item)
       if (item.priceLinkSuppliers === 1) {
-       price = (item.costSuppliersLinkPricesRMB || []).find(priceObj => priceObj.id === supplierId)?.price || price 
+        price =
+          (item.costSuppliersLinkPricesRMB || []).find(
+            (priceObj) => priceObj.id === supplierId
+          )?.price || price;
+      }
+      
+      // 自身没有价格去继承父商品的价格
+      if (!price && item.parentGroupId && parentProduct) {
+        price = getProductPrice(parentProduct)
       }
 
-      return price
+      return price;
+    };
+
+    const getProductTotalPrice = (product) => {
+      if (product.children?.length) {
+
+        return product.children.filter((item) => item.count > 0).reduce((total, current) => {
+          total += getProductPrice(current, product)
+          return total;
+        }, 0)
+      }
+
+      return product.count * getProductPrice(product);
+    }
+
+
+    const totalPrice = useMemo(() => {
+      return orderList.reduce((prev, current) => {
+        return prev + getProductTotalPrice(current)
+      }, 0)
+    }, [orderList])
+
+    function getSku2CountString(product) {
+      if (product.__totalCount > 0 && product.children?.length) {
+        return (
+          <>
+            {product.children
+              .filter((item) => item.count > 0)
+              .map((child) => (
+                <span>
+                  {child.sku}({getProductPrice(child, product)}￥) x {child.count}
+                </span>
+              ))}
+          </>
+        );
+      }
+      console.log(product, 1);
+      return (
+        <span>
+          {product.sku}({getProductPrice(product)}￥) x {product.count}
+        </span>
+      );
     }
 
     // 创建专门用于导出的内容（确保每行至少4个商品）
@@ -246,7 +300,7 @@ const ExportOrder = forwardRef(
 
       setIsExporting(true);
 
-      const imageUrls = orderList.map((item) => item.images[0]?.url || "");
+      const imageUrls = orderList.map((item) => item.images[0] || "");
       const base64Result = await exportImage({
         imageUrls,
       });
@@ -405,10 +459,7 @@ const ExportOrder = forwardRef(
       }
     };
 
-    const priceList = orderList?.map((order) => order.count * getProductPrice(order));
-    const totalPrice = priceList.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue;
-    }, 0);
+
 
     return (
       <div className="max-w-3xl mx-auto p-4">
@@ -457,7 +508,7 @@ const ExportOrder = forwardRef(
                           sm={12} // 小屏幕宽度下每行显示 2 个
                           md={6} // 中等屏幕宽度下每行显示 3 个
                           lg={4} // 大屏幕宽度下每行显示 4 个
-                          xl={4} // 超大屏幕宽度下每行显示 6 个
+                          xl={4} // 超大屏幕宽度下每行显示 4 个
                           key={index}
                           style={{ marginBottom: 16, paddingBottom: 16 }}
                         >
@@ -473,7 +524,7 @@ const ExportOrder = forwardRef(
                               }}
                             >
                               <img
-                                key={item.images[0]?.picturebedId}
+                                key={item.id}
                                 style={{
                                   objectFit: "cover", // 保持原比例
                                   maxWidth: "100%",
@@ -481,17 +532,17 @@ const ExportOrder = forwardRef(
                                   width: "auto",
                                   // height: "100%",
                                 }}
-                                src={item.images[0]?.url || "/placeholder.svg"}
+                                src={item.images[0] || "/placeholder.svg"}
                               />
                             </div>
 
                             <div className="product-card-count">
-                              x{item.count}
+                              {getSku2CountString(item)}
                             </div>
-                            <span
+                            {/* <span
                               className="product-card-title"
                               style={{ padding: "6px 0", textAlign: "center" }}
-                            >{`${item.sku}(${item.nameCn})`}</span>
+                            >{item.nameCn}</span> */}
 
                             {isAdmin && (
                               <span
@@ -505,9 +556,7 @@ const ExportOrder = forwardRef(
                               >
                                 总额：
                                 <span className="product-card-price">
-                                  {`${getProductPrice(item)}*${item.count}=${
-                                    getProductPrice(item) * item.count
-                                  }`}
+                                  {getProductTotalPrice(item)}￥
                                 </span>
                               </span>
                             )}
@@ -525,7 +574,6 @@ const ExportOrder = forwardRef(
                         }}
                       >
                         本次应支付：
-                        {orderList?.length > 1 && `${priceList?.join("+")}=`}
                         <span style={{ color: "#fb914d", fontSize: "18px" }}>
                           {totalPrice}
                         </span>
