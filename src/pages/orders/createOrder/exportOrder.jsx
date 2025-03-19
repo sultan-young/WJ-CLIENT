@@ -9,13 +9,24 @@ import {
 import html2canvas from "html2canvas";
 import dayjs from "dayjs";
 import { jsPDF } from "jspdf";
-import { Button, Row, Col } from "antd";
+import { Button, Row, Col, Form, DatePicker } from "antd";
 import { useAuth } from "../../../context/AuthContext"; // 假设有权限上下文
 import { exportImage } from "../../../services/productService";
+import { isEmpty } from "lodash";
 import "./index.less";
+import Masonry from "react-masonry-css";
+import { CountPriceService } from "./utils";
+
+const breakpointColumnsObj = {
+  2000: 4,
+  1500: 4,
+  1100: 3,
+  700: 2,
+  500: 1,
+};
 
 const ExportOrder = forwardRef(
-  ({ supplierForm, orderForm, shippingDate, suppliers }, ref) => {
+  ({ supplierForm, orderForm, defaultSelectShipDate, suppliers }, ref) => {
     const { supplier: supplierId } = supplierForm.current
       ? // eslint-disable-next-line no-unsafe-optional-chaining
         supplierForm?.current?.getFieldValue()
@@ -28,6 +39,8 @@ const ExportOrder = forwardRef(
     const cardRef = useRef(null);
     const [isExporting, setIsExporting] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [form] = Form.useForm();
+    const shippingDate = Form.useWatch("shippingDate", form);
 
     // 检测是否为移动设备
     useEffect(() => {
@@ -51,6 +64,9 @@ const ExportOrder = forwardRef(
       downloadAsImage,
       downloadAsPDF,
       exportOrderFile,
+      getOrderSetting: () => {
+        return form.getFieldsValue()
+      }
     }));
 
     // 预加载所有图片
@@ -79,46 +95,22 @@ const ExportOrder = forwardRef(
       preloadImages();
     }, []);
 
-
-    // 先获取自身的价格，如果获取不到，去获取父级的价格
-    const getProductPrice = (item, parentProduct) => {
-      let price = item.costPriceRMB;
-
-      // FIXME: 未被拆出来的子元素没有自己的priceLinkSuppliers属性
-      console.log(price, item.sku, item)
-      if (item.priceLinkSuppliers === 1) {
-        price =
-          (item.costSuppliersLinkPricesRMB || []).find(
-            (priceObj) => priceObj.id === supplierId
-          )?.price || price;
+    useEffect(() => {
+      // 将默认时间回填
+      if (defaultSelectShipDate) {
+        form.setFieldValue("shippingDate", dayjs(defaultSelectShipDate));
       }
-      
-      // 自身没有价格去继承父商品的价格
-      if (!price && item.parentGroupId && parentProduct) {
-        price = getProductPrice(parentProduct)
-      }
+    });
 
-      return price;
-    };
-
-    const getProductTotalPrice = (product) => {
-      if (product.children?.length) {
-
-        return product.children.filter((item) => item.count > 0).reduce((total, current) => {
-          total += getProductPrice(current, product)
-          return total;
-        }, 0)
-      }
-
-      return product.count * getProductPrice(product);
-    }
-
+    const countPriceService = useMemo(() => {
+      return new CountPriceService(supplierId);
+    }, [supplierId]);
 
     const totalPrice = useMemo(() => {
       return orderList.reduce((prev, current) => {
-        return prev + getProductTotalPrice(current)
-      }, 0)
-    }, [orderList])
+        return prev + countPriceService.getProductTotalPrice(current);
+      }, 0);
+    }, [orderList]);
 
     function getSku2CountString(product) {
       if (product.__totalCount > 0 && product.children?.length) {
@@ -127,17 +119,19 @@ const ExportOrder = forwardRef(
             {product.children
               .filter((item) => item.count > 0)
               .map((child) => (
-                <span>
-                  {child.sku}({getProductPrice(child, product)}￥) x {child.count}
+                <span key={child.id}>
+                  {child.sku}(
+                  {countPriceService.getProductPrice(child, product)}￥) x{" "}
+                  {child.count}
                 </span>
               ))}
           </>
         );
       }
-      console.log(product, 1);
       return (
         <span>
-          {product.sku}({getProductPrice(product)}￥) x {product.count}
+          {product.sku}({countPriceService.getProductPrice(product)}￥) x{" "}
+          {product.count}
         </span>
       );
     }
@@ -173,7 +167,7 @@ const ExportOrder = forwardRef(
 
       // 创建特殊导出布局
       const exportContainer = document.createElement("div");
-      exportContainer.className = "style-1";
+      exportContainer.className = "order-container-offscreen";
 
       // 复制原始内容的结构，但修改产品网格
       const originalContent = contentRef.current;
@@ -318,9 +312,7 @@ const ExportOrder = forwardRef(
         tempContainer.style.position = "absolute";
         tempContainer.style.left = "-9999px";
         tempContainer.style.top = "0";
-        tempContainer.style.width = isMobile
-          ? "695px"
-          : `${contentRef.current.offsetWidth}px`;
+        tempContainer.style.width = "1414px";
         document.body.appendChild(tempContainer);
 
         // 2. 创建导出内容（根据屏幕大小决定是否使用特殊布局）
@@ -429,7 +421,6 @@ const ExportOrder = forwardRef(
       // setIsExporting(true);
       try {
         const imageData = await exportAsImage();
-        console.log(imageData, "imagedata");
         if (imageData) {
           const link = document.createElement("a");
           link.href = imageData;
@@ -459,10 +450,16 @@ const ExportOrder = forwardRef(
       }
     };
 
-
-
     return (
       <div className="max-w-3xl mx-auto p-4">
+        <Form
+          form={form}
+          layout="vertical"
+        >
+          <Form.Item label="预计发货日期" name="shippingDate" extra='如无法确定可不填，在创建订单时候仍可修改'>
+            <DatePicker />
+          </Form.Item>
+        </Form>
         <div className="mb-6 flex gap-2">
           <Button onClick={downloadAsImage} type="link">
             导出为图片
@@ -472,7 +469,7 @@ const ExportOrder = forwardRef(
           </Button>
         </div>
         <div ref={cardRef}>
-          <div className="style-1" ref={contentRef}>
+          <div className="order-container" ref={contentRef}>
             <div className="order-card">
               <div className="order-card-inner">
                 <div className="order-item-label">基本信息</div>
@@ -490,10 +487,21 @@ const ExportOrder = forwardRef(
                     </div>
                   </div>
 
+                  {shippingDate ? (
+                    <div className="order-item important">
+                      <div className="order-item-label">发货日期</div>
+                      <div className="order-item-value">
+                        {dayjs(shippingDate).format("YYYY-MM-DD")}
+                      </div>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+
                   {isAdmin && (
                     <div className="order-item important">
                       <div className="order-item-label">订单总额:</div>
-                      <div className="order-item-value">{totalPrice}</div>
+                      <div className="order-item-value">{totalPrice}￥</div>
                     </div>
                   )}
                 </div>
@@ -501,21 +509,16 @@ const ExportOrder = forwardRef(
                 <div className="order-notes">
                   <div className="order-item-label">订单详情</div>
                   <div className="order-notes-content">
-                    <Row gutter={[16, 16]}>
-                      {orderList.map((item, index) => (
-                        <Col
-                          xs={12} // 手机宽度下每行显示 1 个
-                          sm={12} // 小屏幕宽度下每行显示 2 个
-                          md={6} // 中等屏幕宽度下每行显示 3 个
-                          lg={4} // 大屏幕宽度下每行显示 4 个
-                          xl={4} // 超大屏幕宽度下每行显示 4 个
-                          key={index}
-                          style={{ marginBottom: 16, paddingBottom: 16 }}
-                        >
+                    <Masonry
+                      className="my-masonry-grid"
+                      columnClassName="my-masonry-grid_column"
+                      breakpointCols={breakpointColumnsObj}
+                    >
+                      {orderList.map((item) => (
+                        <div key={item.id} className="create-order-container">
                           <div className="product-card">
                             <div
                               style={{
-                                height: "150px",
                                 width: "100%",
                                 display: "flex",
                                 alignItems: "center",
@@ -540,30 +543,23 @@ const ExportOrder = forwardRef(
                               {getSku2CountString(item)}
                             </div>
                             {/* <span
-                              className="product-card-title"
-                              style={{ padding: "6px 0", textAlign: "center" }}
-                            >{item.nameCn}</span> */}
-
+                           className="product-card-title"
+                           style={{ padding: "6px 0", textAlign: "center" }}
+                         >{item.nameCn}</span> */}
                             {isAdmin && (
-                              <span
-                                className="product-card-desc"
-                                style={{
-                                  marginBottom: 12,
-                                  fontSize: 14,
-                                  textAlign: "center",
-                                  marginTop: 0,
-                                }}
-                              >
+                              <span className="product-card-desc">
                                 总额：
-                                <span className="product-card-price">
-                                  {getProductTotalPrice(item)}￥
+                                <span className="product-card-price-small">
+                                  {countPriceService.getProductTotalPrice(item)}
+                                  ￥
                                 </span>
                               </span>
                             )}
                           </div>
-                        </Col>
+                        </div>
                       ))}
-                    </Row>
+                    </Masonry>
+
                     {isAdmin && (
                       <div
                         style={{
@@ -574,8 +570,8 @@ const ExportOrder = forwardRef(
                         }}
                       >
                         本次应支付：
-                        <span style={{ color: "#fb914d", fontSize: "18px" }}>
-                          {totalPrice}
+                        <span className="product-card-price-large">
+                          {totalPrice}￥
                         </span>
                       </div>
                     )}

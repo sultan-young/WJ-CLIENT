@@ -15,6 +15,7 @@ import {
   createSupplierOrder,
   updateSupplierOrder,
 } from "../../../services/supplierOrder";
+import { flattenData } from "./utils";
 
 const PAGE_MODE = {
   CREATE: 1,
@@ -26,13 +27,13 @@ const CreateOrder = forwardRef(({ afterFinishAction }, ref) => {
   const [createOrderDrawerVisible, setCreateOrderDrawerVisible] =
     useState(false);
   const [supplierId, setSupplierId] = useState("");
-  const [shippingDate, setShippingDate] = useState("");
   const selectSupplierFormRef = useRef(null);
   const selectOrderFormRef = useRef(null);
   const exportOrderFormRef = useRef(null);
   const { suppliers } = usePreloadData();
   // 当前步骤 0=> 选中供应商, 1=>选中商品和数量下订单, 2=>选择预发货时间，选择是否需要在完成订单时候强制上传图片和订单号
   const [currentStep, setCurrentStep] = useState(0);
+  const [defaultSelectShipDate, setDefaultSelectShipDate] = useState()
 
   // 页面模式
   const [pageMode, setPageMode] = useState(PAGE_MODE.EDIT);
@@ -57,7 +58,6 @@ const CreateOrder = forwardRef(({ afterFinishAction }, ref) => {
   const resetState = () => {
     setCurrentStep(0);
     setSupplierId("");
-    setShippingDate("");
     setPageInitialData(null);
     setPageMode(PAGE_MODE.CREATE);
     selectSupplierFormRef.current &&
@@ -92,11 +92,6 @@ const CreateOrder = forwardRef(({ afterFinishAction }, ref) => {
     }
     // 选择商品阶段
     if (currentStep === 1) {
-      // await selectOrderFormRef.current.formData.validateFields();
-      // setShippingDate(
-      //   selectOrderFormRef.current.formData.getFieldValue().shippingDate
-      // );
-
       // 未选中
       if (!selectOrderFormRef.current.verifySelectStatus()) {
         message.error("至少选中一个产品");
@@ -115,16 +110,19 @@ const CreateOrder = forwardRef(({ afterFinishAction }, ref) => {
   };
 
   const submitOrder = async () => {
-    const orderList = selectOrderFormRef.current.getValues().map((item) => ({
+    const orderList = flattenData(selectOrderFormRef.current.getValues()).map((item) => ({
       sku: item.sku,
       id: item.id,
       count: item.count,
     }));
+    const orderSetting = exportOrderFormRef.current.getOrderSetting()
+    console.log(orderSetting, 'orderSetting')
 
     const submitData = {
       supplierId,
       orderList,
-      shippingDate,
+      ...orderSetting,
+      // shippingDate,
     };
     if (pageMode === PAGE_MODE.CREATE) {
       await createSupplierOrder(submitData);
@@ -187,7 +185,7 @@ const CreateOrder = forwardRef(({ afterFinishAction }, ref) => {
           ref={exportOrderFormRef}
           supplierForm={selectSupplierFormRef}
           orderForm={selectOrderFormRef}
-          shippingDate={shippingDate}
+          // shippingDate={shippingDate}
           suppliers={suppliers}
         />
       </div>

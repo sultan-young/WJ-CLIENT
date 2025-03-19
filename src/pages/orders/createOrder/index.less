@@ -48,7 +48,7 @@
 .order-content {
   margin-top: 8px;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 24px;
 }
 
@@ -77,69 +77,68 @@
   }
 }
 
-/* 风格 1: 极简主义 */
-.style-1 .order-card {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+.order-container,
+.order-container-offscreen {
+  .order-card-inner {
+    padding: 24px;
+  }
+  .order-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  .order-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+  }
+  .order-number {
+    font-size: 14px;
+    color: #888;
+  }
+  .order-item-label {
+    font-size: 14px;
+    color: #888;
+  }
+  .order-item-value {
+    font-size: 15px;
+    color: #333;
+  }
+  .order-item.important .order-item-label {
+    color: #333;
+    /* font-weight: 500; */
+  }
+  .order-item.important .order-item-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+  .order-notes {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+  .order-notes-content {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+  }
+  .company-watermark {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.06);
+    font-weight: 500;
+  }
 }
-
-.style-1 .order-card-inner {
-  padding: 24px;
-}
-
-.style-1 .order-title {
-  font-size: 18px;
-  font-weight: 500;
-  color: #333;
-}
-
-.style-1 .order-number {
-  font-size: 14px;
-  color: #888;
-}
-
-.style-1 .order-item-label {
-  font-size: 14px;
-  color: #888;
-}
-
-.style-1 .order-item-value {
-  font-size: 15px;
-  color: #333;
-}
-
-.style-1 .order-item.important .order-item-label {
-  color: #333;
-  /* font-weight: 500; */
-}
-
-.style-1 .order-item.important .order-item-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-.style-1 .order-notes {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-
-.style-1 .order-notes-content {
-  margin-top: 8px;
-  font-size: 14px;
-  color: #555;
-  line-height: 1.5;
-}
-
-.style-1 .company-watermark {
-  position: absolute;
-  bottom: 16px;
-  right: 20px;
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.06);
-  font-weight: 500;
+.order-container-offscreen {
+  .order-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
 }
 
 .my-masonry-grid {
@@ -208,9 +207,10 @@
 }
 
 .product-card-desc {
-  margin-top: 6px;
+  padding: 6px 0;
   color: #666666;
   font-size: 12px;
+  font-weight: bold;
 }
 
 .product-card-count {
@@ -218,22 +218,27 @@
   background: #000;
   color: #fff;
   /* text-align: center;*/
-  margin-top: 3px;
-  border-radius: 3px;
+  margin-top: 2px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* padding: 3px 0; */
-  /* line-height: 24px; */
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 12px;
   padding: 6px 0;
 }
 
 .product-card-price {
-  color: #fb914d;
   font-weight: 600;
+  font-weight: 700;
+  color: #2d3436;
+  letter-spacing: -0.5px;
+  position: relative;
+  &-small {
+    font-size: 14px;
+  }
+  &-large {
+    font-size: 26px;
+  }
 }
 
 .create-order-container .ant-badge {

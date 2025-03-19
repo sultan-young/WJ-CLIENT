@@ -4,6 +4,7 @@ import {
   forwardRef,
   useImperativeHandle,
   useMemo,
+  useRef,
 } from "react";
 import {
   Button,
@@ -128,13 +129,6 @@ const Step2WithOrder = forwardRef(
       setLoading(true);
       setProductList([]);
 
-      // 将默认时间回填
-      // if (defaultSelectShipDate) {
-      //   ref.current.formData.setFieldValue(
-      //     "shippingDate",
-      //     dayjs(defaultSelectShipDate)
-      //   );
-      // }
 
       const fetchData = async () => {
         if (!supplierId) {
@@ -158,7 +152,6 @@ const Step2WithOrder = forwardRef(
           );
           setQuantities(defaultSelectOrderMap);
           const productList = processData(result);
-          console.log(productList, "productList");
           setProductList(productList || []);
         } catch (error) {
           message.error(error);
@@ -198,14 +191,11 @@ const Step2WithOrder = forwardRef(
           })
           .filter((item) => item.count > 0 || item.__totalCount > 0);
 
-        console.log(selectedCards, productList, "selectedCards");
         return selectedCards;
       },
-      formData: ref.current,
     }));
 
     const handleQuantityChange = (event, id, delta) => {
-      console.log("qu", quantities);
       event.stopPropagation();
       setQuantities((prev) => ({
         ...prev,
@@ -215,7 +205,7 @@ const Step2WithOrder = forwardRef(
 
     const ChangeQuantityButton = (product) => {
       return (
-        <div className="product-card-btns">
+        <div key={product.id} className="product-card-btns">
           <Space size="small">
             <Tag color="processing" bordered={false}>
               {product.sku}
@@ -265,25 +255,15 @@ const Step2WithOrder = forwardRef(
           placeholder="通过sku或者商品名称筛选"
           onChange={onSearch}
         />
-
-        {/* <Form ref={ref} layout="vertical">
-          <Form.Item
-            label="发货日期"
-            name="shippingDate"
-            rules={[{ required: true, message: "请选择发货日期" }]}
-          >
-            <DatePicker />
-          </Form.Item>
-        </Form> */}
         {productList.length ? (
           <Masonry
-            className=" my-masonry-grid"
+            className="my-masonry-grid"
             columnClassName="my-masonry-grid_column"
             breakpointCols={breakpointColumnsObj}
           >
             {/* { / * JSX 项数组 * / }  */}
             {filterProductList.map((product) => (
-              <div className="create-order-container">
+              <div key={product.id} className="create-order-container">
                 <Badge
                   styles={{ width: "100%", background: "red" }}
                   count={quantities[product.id]}
@@ -291,7 +271,6 @@ const Step2WithOrder = forwardRef(
                   <div className="product-card">
                     <Image.PreviewGroup items={product.images}>
                       <Image
-                        key={product.picturebedId}
                         style={{ objectFit: "cover" }}
                         src={product.images[0]}
                         preview={true}
