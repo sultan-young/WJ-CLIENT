@@ -10,7 +10,6 @@ import {
   getUploadProductImageSign,
 } from "../../services/productService";
 import axios from "axios";
-import ImageGallery from "../ImageContainer";
 
 const UploadImage = ({
   fileList = [], // 接收对象数组 [{url: "xxx", ...}]

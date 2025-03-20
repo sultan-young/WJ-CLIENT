@@ -21,7 +21,7 @@ import {
 } from "@ant-design/icons";
 import { useMemo, useState } from "react";
 import { updateProduct } from "../../../services/productService";
-import ImageGallery from "../../ImageContainer";
+import ImageGallery from "../../ImageGalleryContainer";
 
 // 使用 props 动态设置样式
 const DealCard = styled(Card)(({ single }) => ({
@@ -76,7 +76,6 @@ const ProductCardForPreview = ({
       cover={
         <ImageGallery
           images={imageUrls}
-          height={isSingleShow ? "100%" : "200px"}
         ></ImageGallery>
       }
       actions={

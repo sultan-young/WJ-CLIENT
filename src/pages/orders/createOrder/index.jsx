@@ -33,7 +33,6 @@ const CreateOrder = forwardRef(({ afterFinishAction }, ref) => {
   const { suppliers } = usePreloadData();
   // 当前步骤 0=> 选中供应商, 1=>选中商品和数量下订单, 2=>选择预发货时间，选择是否需要在完成订单时候强制上传图片和订单号
   const [currentStep, setCurrentStep] = useState(0);
-  const [defaultSelectShipDate, setDefaultSelectShipDate] = useState()
 
   // 页面模式
   const [pageMode, setPageMode] = useState(PAGE_MODE.EDIT);
@@ -110,20 +109,21 @@ const CreateOrder = forwardRef(({ afterFinishAction }, ref) => {
   };
 
   const submitOrder = async () => {
-    const orderList = flattenData(selectOrderFormRef.current.getValues()).map((item) => ({
-      sku: item.sku,
-      id: item.id,
-      count: item.count,
-    }));
-    const orderSetting = exportOrderFormRef.current.getOrderSetting()
-    console.log(orderSetting, 'orderSetting')
-
+    const orderList = flattenData(selectOrderFormRef.current.getValues()).map(
+      (item) => ({
+        sku: item.sku,
+        id: item.id,
+        count: item.count,
+      })
+    );
+    const orderSetting = exportOrderFormRef.current.getOrderSetting();
     const submitData = {
       supplierId,
       orderList,
       ...orderSetting,
-      // shippingDate,
     };
+
+    console.log(orderSetting.shippingDate, "orderSetting");
     if (pageMode === PAGE_MODE.CREATE) {
       await createSupplierOrder(submitData);
       message.success("创建成功");
@@ -185,7 +185,7 @@ const CreateOrder = forwardRef(({ afterFinishAction }, ref) => {
           ref={exportOrderFormRef}
           supplierForm={selectSupplierFormRef}
           orderForm={selectOrderFormRef}
-          // shippingDate={shippingDate}
+          defaultSelectShipDate={pageInitialData?.shippingDate}
           suppliers={suppliers}
         />
       </div>

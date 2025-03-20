@@ -25,6 +25,7 @@ import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { searchProduct } from "../../../services/productService";
 import Masonry from "react-masonry-css";
 import "./index.less";
+import {filterAndTransferProductData} from "../common/processProductData";
 const { Search } = Input;
 
 const breakpointColumnsObj = {
@@ -35,82 +36,7 @@ const breakpointColumnsObj = {
   500: 1,
 };
 
-function processData(data) {
-  const extendParentData = (child, parent) => {
-    return {
-      costPriceRMB: child.costPriceRMB || parent.costPriceRMB,
-      nameCn: child.nameCn || parent.nameCn,
-      costSuppliersLinkPricesRMB: child.costSuppliersLinkPricesRMB?.length || parent.costSuppliersLinkPricesRMB,
-      priceLinkSuppliers: child.priceLinkSuppliers,
-    };
-  };
 
-  return (
-    data
-      .flatMap((item) => {
-        // 非组合商品直接标记 __type 0
-        if (!item.isGroup) {
-          return [{ ...item, __type: 0 }];
-        }
-
-        // 组合商品但无子项，过滤掉
-        if (item.children.length === 0) {
-          return [];
-        }
-
-        // 分离有图片和无图片的子项
-        const childrenWithImages = item.children.filter(
-          (child) => child.images && child.images.length > 0
-        );
-        const childrenWithoutImages = item.children.filter(
-          (child) => !child.images || child.images.length === 0
-        );
-
-        // 所有子项无图片，父标记 __type 1
-        if (childrenWithImages.length === 0) {
-          return [{ ...item, __type: 1 }];
-        }
-
-        // 所有子项有图片，拆分并过滤父
-        if (childrenWithoutImages.length === 0) {
-          return childrenWithImages.map((child) => ({
-            ...child,
-            __type: 0,
-            ...extendParentData(child, item),
-          }));
-        }
-
-        // 部分子项有图片，拆分后保留父并更新其子项
-        const updatedParent = {
-          ...item,
-          children: childrenWithoutImages,
-          __type: 1,
-        };
-        const splitChildren = childrenWithImages.map((child) => ({
-          ...child,
-          __type: 0,
-          ...extendParentData(child, item),
-        }));
-
-        // 进行商品数据过滤，只留下生成订单需要的数据
-        return [updatedParent, ...splitChildren];
-      })
-      // 只将有用的字段带出来
-      .map((product) => ({
-        id: product.id,
-        nameCn: product.nameCn,
-        sku: product.sku,
-        stock: product.stock,
-        costPriceRMB: product.costPriceRMB,
-        children: product.children,
-        costSuppliersLinkPricesRMB: product.costSuppliersLinkPricesRMB,
-        priceLinkSuppliers: product.priceLinkSuppliers,
-        parentGroupId: product.parentGroupId,
-        __type: product.__type,
-        images: product.images.map((img) => img.url),
-      }))
-  );
-}
 
 const Step2WithOrder = forwardRef(
   ({ supplierId, defaultSelectOrder = [] }, ref) => {
@@ -151,7 +77,7 @@ const Step2WithOrder = forwardRef(
             {}
           );
           setQuantities(defaultSelectOrderMap);
-          const productList = processData(result);
+          const productList = filterAndTransferProductData(result);
           setProductList(productList || []);
         } catch (error) {
           message.error(error);

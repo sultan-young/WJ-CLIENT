@@ -3,7 +3,7 @@ import { Dropdown, Space } from "antd";
 import { CloseCircleOutlined, DownOutlined } from "@ant-design/icons";
 import "./styles.css"; // 创建对应的CSS文件
 
-const SearchBox = ({ onSearch }) => {
+const SearchBox = ({ onSearch, placeholder = "可通过SKU, 供应商名称，商品名称等进行模糊搜索" }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [defaultItem, setDefaultItem] = useState(0);
   const timeoutRef = useRef(null);
@@ -135,7 +135,7 @@ const SearchBox = ({ onSearch }) => {
           }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder="可通过SKU, 供应商名称，商品名称等进行模糊搜索"
+          placeholder={placeholder}
           className="search-input"
           aria-label="Search"
         />

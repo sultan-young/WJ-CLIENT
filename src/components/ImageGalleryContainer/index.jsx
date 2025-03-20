@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Image } from "antd";
-import styles from "./index.module.less";
+import "./index.less";
 import empty from "./empty.svg";
 
-const ImageGallery = ({ images, height = "100%" }) => {
-  if (!images || images.length === 0) return null;
+const ImageGallery = ({ images, width = "100%" }) => {
+  if (!images || images.length === 0) return 111;
 
   // 计算宫格参数
   const getGridParams = () => {
@@ -17,34 +17,28 @@ const ImageGallery = ({ images, height = "100%" }) => {
   const { columns, gridSize } = getGridParams();
 
   return (
-    <div style={{overflow: 'hidden', height: '100%'}}>
+    <div className="image-gallery-container" style={{ width }}>
       <Image.PreviewGroup>
         {columns === 1 ? (
-          <Image src={images[0]} style={{ maxWidth: "100%", height }} />
+          <Image src={images[0]} style={{ maxWidth: "100%", height: '100%', objectFit: 'cover' }} />
         ) : (
           <div
+            className="image-gallery-container-grid"
             style={{
-              display: "grid",
-              gap: 8,
               gridTemplateColumns: `repeat(${columns}, 1fr)`,
-              height,
+              gridTemplateRows: `repeat(${columns}, 1fr)`,
+              height: '100%',
             }}
           >
             {Array.from({ length: gridSize }).map((_, index) => {
               return (
                 <div
+                  className="image-gallery-container-grid-item-wrapper"
                   key={index}
-                  style={{
-                    position: "relative",
-                    backgroundColor: "#f0f0f0",
-                    width: "100%",
-                    display: "flex",
-                  }}
                 >
                   <Image
                     src={images[index] || empty}
                     style={{
-                      position: "absolute",
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
