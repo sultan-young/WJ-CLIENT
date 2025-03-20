@@ -19,6 +19,7 @@ export const PreloadDataProvider = ({ children }) => {
   const [suppliersOption, setSuppliersOption] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [shopData, setShopData] = useState([]);
   const [initialLoad, setInitialLoad] = useState(false);
 
   // 数据获取函数

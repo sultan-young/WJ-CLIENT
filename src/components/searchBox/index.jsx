@@ -3,7 +3,11 @@ import { Dropdown, Space } from "antd";
 import { CloseCircleOutlined, DownOutlined } from "@ant-design/icons";
 import "./styles.css"; // 创建对应的CSS文件
 
-const SearchBox = ({ onSearch, placeholder = "可通过SKU, 供应商名称，商品名称等进行模糊搜索" }) => {
+const SearchBox = ({
+  onSearch,
+  placeholder = "可通过SKU, 供应商名称，商品名称等进行模糊搜索",
+  switchOption = [],
+}) => {
   const [isFocused, setIsFocused] = useState(false);
   const [defaultItem, setDefaultItem] = useState(0);
   const timeoutRef = useRef(null);
@@ -23,9 +27,6 @@ const SearchBox = ({ onSearch, placeholder = "可通过SKU, 供应商名称，�
     e.preventDefault();
   };
 
-
-
-
   // 自动聚焦逻辑
   const autoFocus = useCallback(() => {
     inputRef.current?.focus();
@@ -43,9 +44,9 @@ const SearchBox = ({ onSearch, placeholder = "可通过SKU, 供应商名称，�
     }
     timeoutRef.current = setTimeout(() => {
       onSearch({
-      type: defaultItem,
-      content: value,
-    });
+        type: defaultItem,
+        content: value,
+      });
     }, 500); // 500毫秒防抖时间
   }, []);
 
@@ -59,9 +60,9 @@ const SearchBox = ({ onSearch, placeholder = "可通过SKU, 供应商名称，�
   }, []);
 
   const clearSearchTerm = () => {
-    setSearchTerm('')
-    onSearch()
-  }
+    setSearchTerm("");
+    onSearch();
+  };
 
   // 初始化和事件监听
   useEffect(() => {
@@ -86,43 +87,42 @@ const SearchBox = ({ onSearch, placeholder = "可通过SKU, 供应商名称，�
 
   // 处理键盘事件
 
-  const items = [
-    {
-      label: "模糊查询",
-      key: 0,
-    },
-    {
-      label: "tag查询",
-      key: 1,
-    },
-  ];
   return (
     <form
       className={`search-box-container ${isFocused ? "focused" : ""}`}
       onSubmit={handleSubmit}
     >
       <div className="search-input-wrapper">
-        <Dropdown
-          menu={{
-            items,
-            selectable: true,
-            defaultSelectedKeys: defaultItem,
-            onClick: (e) => {
-              console.log(e.key, "查询type");
-              setDefaultItem(e?.key);
-            },
-          }}
-          trigger={["click"]}
-        >
-          <Space>
-            <span
-              style={{ color: "#1677ff", fontSize: "14px", marginLeft: "14px" }}
-            >
-              {items?.find((a) => a.key == defaultItem)?.label}
-            </span>
-            <DownOutlined style={{ color: "#1677ff" }} />
-          </Space>
-        </Dropdown>
+        {switchOption.length ? (
+          <Dropdown
+            menu={{
+              switchOption,
+              selectable: true,
+              defaultSelectedKeys: defaultItem,
+              onClick: (e) => {
+                console.log(e.key, "查询type");
+                setDefaultItem(e?.key);
+              },
+            }}
+            trigger={["click"]}
+          >
+            <Space>
+              <span
+                style={{
+                  color: "#1677ff",
+                  fontSize: "14px",
+                  marginLeft: "14px",
+                }}
+              >
+                {switchOption?.find((a) => a.key == defaultItem)?.label}
+              </span>
+              <DownOutlined style={{ color: "#1677ff" }} />
+            </Space>
+          </Dropdown>
+        ) : (
+          <></>
+        )}
+
         <input
           type="text"
           autoFocus
@@ -130,7 +130,7 @@ const SearchBox = ({ onSearch, placeholder = "可通过SKU, 供应商名称，�
           ref={inputRef}
           onChange={(e) => {
             const value = e.target.value;
-            setSearchTerm(value)
+            setSearchTerm(value);
             debouncedSearch(value);
           }}
           onFocus={() => setIsFocused(true)}
@@ -139,7 +139,12 @@ const SearchBox = ({ onSearch, placeholder = "可通过SKU, 供应商名称，�
           className="search-input"
           aria-label="Search"
         />
-        {searchTerm ? <CloseCircleOutlined onClick={clearSearchTerm} style={{padding: '10px'}} /> : null}
+        {searchTerm ? (
+          <CloseCircleOutlined
+            onClick={clearSearchTerm}
+            style={{ padding: "10px" }}
+          />
+        ) : null}
         <button type="submit" className="search-button">
           <svg
             className="search-icon"

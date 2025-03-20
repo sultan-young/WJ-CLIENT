@@ -26,7 +26,7 @@ import ImageGallery from "../../ImageGalleryContainer";
 // 使用 props 动态设置样式
 const DealCard = styled(Card)(({ single }) => ({
   ".ant-card-cover": {
-    ...(single ? { maxHeight: "500px !important", height: "500px" } : {}),
+    ...(single ? { maxHeight: "500px !important", height: "500px", overflow: 'hidden' } : {}),
   },
 }));
 
@@ -72,7 +72,7 @@ const ProductCardForPreview = ({
     <DealCard
       // title={product.nameCn}
       variant="borderless"
-      single={isSingleShow || undefined}
+      single={isSingleShow || false}
       cover={
         <ImageGallery
           images={imageUrls}

@@ -3,13 +3,32 @@ import React, {
   forwardRef,
   useImperativeHandle,
   useEffect,
+  useMemo,
 } from "react";
-import { Table, Input, Typography, Form, Popconfirm } from "antd";
+import {
+  Table,
+  Input,
+  Typography,
+  Form,
+  Popconfirm,
+  Button,
+  Space,
+  message,
+  Tag,
+  List,
+} from "antd";
+import { CopyOutlined, SearchOutlined } from "@ant-design/icons";
+import { copyToClipboard } from "../../../utils/clipboard";
 
 const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
   const [editingKey, setEditingKey] = useState("");
   const [form] = Form.useForm();
   const [data, setData] = useState(dataSource);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  const countryFilters = useMemo(() => {
+    return [...new Set(data.map(item => item.country))];
+  }, [data])
 
   useEffect(() => {
     setData(dataSource);
@@ -19,6 +38,15 @@ const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
   useImperativeHandle(ref, () => ({
     exportData: data,
   }));
+
+  const onSelectChange = (newSelectedRowKeys) => {
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  };
 
   const isEditing = (record) => {
     // if (!!editingKey) return false;
@@ -31,6 +59,14 @@ const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
       ...record, // 填充其他字段
     });
     setEditingKey(record.buyer_id);
+  };
+
+  const deleteOrder = (record) => {
+    setData(data.filter((item) => record.__uid !== item.__uid));
+  };
+  const deleteSelected = () => {
+    setData(data.filter((item) => !selectedRowKeys.includes(item.__uid)));
+    setSelectedRowKeys([]);
   };
 
   const cancel = () => {
@@ -60,33 +96,137 @@ const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
 
   const columns = [
     {
-      title: "订单Id",
-      dataIndex: "buyer_id",
+      title: "姓名",
+      dataIndex: "name",
       fixed: "left",
+      width: 150,
+      render: (text) => {
+        return (
+          <a
+            style={{ color: "#4096ff" }}
+            onClick={() => {
+              copyToClipboard(text);
+              message.success("复制成功");
+            }}
+            type="link"
+          >
+            {text}
+          </a>
+        );
+      },
     },
-    { title: "姓名", dataIndex: "name", fixed: "left" },
-    { title: "国家", dataIndex: "country" },
+    {
+      title: "SKU编号*数量",
+      dataIndex: "product_identifier",
+      width: 150,
+      fixed: "left",
+      render: (text, record) =>
+        record.products.map((product, idx) => (
+          <div key={idx}>
+            {product.product_identifier || "N/A"} * {product.quantity}
+          </div>
+        )),
+    },
+    {
+      title: "定制信息",
+      dataIndex: "personalisation",
+      width: 300,
+      fixed: "left",
+      render: (text, record) => {
+        const dataList = [];
+
+        const personalisationList = (record.products || [])
+          .map((product) => product.personalisation)
+          .filter((item) => item);
+
+        if (personalisationList.length) {
+          personalisationList.forEach((item, index) => {
+            dataList.push({
+              source: `顾客定制${
+                personalisationList.length > 1
+                  ? `${index + 1} (${
+                      record.products[index].product_identifier || "N/A"
+                    })`
+                  : ""
+              }`,
+              content: item,
+            });
+          });
+        }
+
+        if (record.note_from_buyer) {
+          dataList.push({
+            source: "顾客备注",
+            content: record.note_from_buyer,
+          });
+        }
+
+        if ((record.merchant_notes || []).length) {
+          dataList.push({
+            source: "客服备注",
+            content:
+              (record.merchant_notes || [])?.map?.((a) => a.note)?.join(",") ||
+              "--",
+          });
+        }
+
+        return (
+          <ul>
+            {dataList.map((item) => (
+              <li>
+                <span>【{item.source}】</span>
+                <span>{item.content}</span>
+              </li>
+            ))}
+            {!dataList.length && "N/A"}
+          </ul>
+        );
+      },
+    },
+    { title: "店铺", dataIndex: "__shopAbbr" },
+    {
+      title: "礼物相关",
+      dataIndex: "gift_message",
+      render: (_, record) => {
+        const { is_gift_wrapped, gift_message, gift_buyer_first_name } = record;
+        const gift_message_total = `${gift_message}${
+          gift_buyer_first_name ? `\n--$${gift_buyer_first_name}` : ""
+        }`;
+        return (
+          <Space wrap>
+            {is_gift_wrapped ? <Tag color="#f50">支付礼物包装</Tag> : null}
+            {gift_message ? (
+              <a>
+                <Tag
+                  onClick={() => {
+                    copyToClipboard(gift_message_total);
+                    message.success("礼物留言复制成功");
+                  }}
+                  color="lime"
+                >
+                  有礼物留言
+                </Tag>
+              </a>
+            ) : null}
+            {!is_gift_wrapped && !gift_message && "N/A"}
+          </Space>
+        );
+      },
+    },
+    {
+      title: "国家",
+      dataIndex: "country",
+      filters: countryFilters.map(item => ({
+        text: item,
+        value: item,
+      })),
+      onFilter: (value, record) => record.country.indexOf(value) === 0,
+    },
     { title: "州", dataIndex: "state" },
     { title: "城市", dataIndex: "city" },
     { title: "邮编", dataIndex: "zip" },
     { title: "具体地址", dataIndex: "first_line" },
     { title: "门牌号", dataIndex: "second_line" },
-    {
-      title: "SKU编号",
-      dataIndex: "product_identifier",
-      render: (text, record) =>
-        record.products.map((product, idx) => (
-          <div key={idx}>{product.product_identifier}</div>
-        )),
-    },
-    {
-      title: "数量",
-      dataIndex: "quantity",
-      render: (text, record) =>
-        record.products.map((product, idx) => (
-          <div key={idx}>{product.quantity}</div>
-        )),
-    },
     {
       title: "选项",
       dataIndex: "option",
@@ -94,23 +234,15 @@ const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
       width: 150,
     },
     {
-      title: "个性化定制",
-      dataIndex: "personalisation",
-      width: 150,
-      render: (text, record) =>
-        record.products.map((product, idx) => (
-          <div key={idx}>{product.personalisation}</div>
-        )),
+      title: "订单Id",
+      dataIndex: "buyer_id",
+      fixed: "left",
     },
-    {
-      title: "商家备注",
-      dataIndex: "merchant_notes",
-      width: 150,
-      render: (text) => text?.map?.((a) => a.note)?.join(","),
-    },
+
     {
       title: "操作",
       dataIndex: "action",
+      fixed: "right",
       render: (_, record) => {
         const editable = isEditing(record);
         return editable ? (
@@ -121,17 +253,20 @@ const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
             >
               保存
             </Typography.Link>
-            <Popconfirm title="确定取消吗？" onConfirm={cancel}>
-              <a>取消</a>
-            </Popconfirm>
+            <a onClick={cancel}>取消</a>
           </span>
         ) : (
-          <Typography.Link
-            disabled={editingKey !== ""}
-            onClick={() => edit(record)}
-          >
-            编辑
-          </Typography.Link>
+          <>
+            <Typography.Link
+              disabled={editingKey !== ""}
+              onClick={() => edit(record)}
+            >
+              编辑
+            </Typography.Link>
+            <Button type="link" onClick={() => deleteOrder(record)} danger>
+              删除
+            </Button>
+          </>
         );
       },
     },
@@ -156,19 +291,21 @@ const ShippingTable = forwardRef(({ dataSource = [] }, ref) => {
   return (
     <div>
       <Form form={form} component={false}>
+        <Button danger onClick={deleteSelected}>
+          删除选中
+        </Button>
         <Table
-          bordered
           columns={mergedColumns}
+          rowSelection={rowSelection}
           dataSource={data}
-          scroll={{ x: "max-content", y: "calc(100vh - 270px)" }}
+          scroll={{ x: "2000px", y: "calc(100vh - 270px)" }}
           pagination={false}
-          rowKey="buyer_id"
+          rowKey="__uid"
           components={{
             body: {
               cell: EditableCell,
             },
           }}
-          rowClassName="editable-row"
         />
       </Form>
     </div>
@@ -179,9 +316,6 @@ const EditableCell = ({
   editing,
   dataIndex,
   title,
-  inputType,
-  record,
-  index,
   children,
   ...restProps
 }) => {

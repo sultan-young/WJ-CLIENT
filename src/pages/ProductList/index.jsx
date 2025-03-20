@@ -15,6 +15,17 @@ const InitialPagination = {
   total: 0,
 };
 
+const SwitchOption = [
+  {
+    label: "模糊查询",
+    key: 0,
+  },
+  {
+    label: "tag查询",
+    key: 1,
+  },
+];
+
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -198,6 +209,7 @@ const ProductList = () => {
               searchTermRef.current = searchTerm;
               loadProductData();
             }}
+            switchOption={SwitchOption}
             style={{ flex: "1 1 0" }}
           ></SearchBox>
         </Col>

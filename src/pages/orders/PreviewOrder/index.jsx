@@ -18,7 +18,7 @@ const breakpointColumnsObj = {
   500: 1,
 };
 
-const PreviewOrder = forwardRef((props) => {
+const PreviewOrder = ((props) => {
   const { shippingDate, supplierId, orderList = [] } = props;
   const { user } = useAuth(); // 获取当前用户信息
   const isAdmin = user?.name === "admin";

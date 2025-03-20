@@ -189,7 +189,7 @@ const ProductForm = forwardRef((props, ref) => {
     submit: async () => {
       return await handleSubmit();
     },
-    reset: () => baseForm.resetFields(),
+    reset: () => resetAll(),
   }));
 
   // 初始化数据
@@ -256,6 +256,7 @@ const ProductForm = forwardRef((props, ref) => {
     setLoading(false);
     setSubmitBtnLoadings(false);
     baseForm.resetFields();
+    childrenForm.resetFields();
   };
 
   // 提交处理
@@ -628,6 +629,14 @@ const ProductForm = forwardRef((props, ref) => {
                     name,
                     "id",
                   ]);
+
+                  const variantSerial = childrenForm.getFieldValue([
+                    "subProducts",
+                    name,
+                    "variantSerial",
+                  ]);
+                  console.log(variantSerial, 'variantSerial')
+
                   return (
                     <Space
                       key={key}
@@ -648,6 +657,7 @@ const ProductForm = forwardRef((props, ref) => {
                       {/* 商品编号 */}
                       <Form.Item
                         {...restField}
+                        label={initialValues?.sku ? initialValues.sku + '-' + variantSerial : ''}
                         name={[name, "variantSerial"]}
                         style={{ width: "100px" }}
                         rules={[

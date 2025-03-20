@@ -27,6 +27,14 @@ export interface ProcessedOrder {
   option?: string;
   products: ProductInfo[];
   merchant_notes: MerchantNote[]; // 修改为包含order_id的结构
+  order_id: string,
+  order_date: string,
+  is_gift_wrapped: boolean,
+  gift_message: string,
+  gift_buyer_first_name: string,
+  __shopAbbr: string,
+  __uid: string,
+  [key: string]: any;
 }
 
 export interface Buyer {
@@ -68,6 +76,7 @@ interface Note {
 
 interface Notes {
   private_order_notes: Note[];
+  note_from_buyer: String;
 }
 export interface Fulfillment {
   to_address: ToAddress;
@@ -79,6 +88,11 @@ export interface Order {
   fulfillment: Fulfillment;
   order_id: string;
   notes?: Notes;
+  order_date: string,
+  is_gift_wrapped: boolean,
+  gift_message: string,
+  gift_buyer_first_name: string,
+  [key: string]: any;
 }
 
 export interface JsonData {

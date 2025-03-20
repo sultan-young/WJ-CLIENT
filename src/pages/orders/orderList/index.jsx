@@ -285,7 +285,7 @@ const OrderManagement = () => {
             borderRadius: "4px",
           }}
         >
-          <SearchBox placeholder="可以通过供应商名称，订单号进行搜索" onSearch={(value) => onSearch(value)}/>
+          <SearchBox placeholder="可以通过供应商名称，手机尾号，订单号进行搜索" onSearch={(value) => onSearch(value)}/>
 
           <Space>
             <Button type="primary" onClick={() => handleCreateOrder(1)}>

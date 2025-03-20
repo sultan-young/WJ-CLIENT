@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
-import { Button, message } from "antd";
+import { Button, message, Space } from "antd";
 import ShippingTable from "./ShippingTable";
 import { Upload } from "lucide-react";
 import { processJsonData } from "../utils/upload";
@@ -22,6 +22,7 @@ export function DataProcessor() {
       const fileContent = await file.text();
       const jsonData = JSON.parse(fileContent);
       const processedData = processJsonData(jsonData);
+      console.log(processedData);
       setData(processedData);
     } catch (error) {
       console.error("Error processing file:", error);
@@ -31,11 +32,12 @@ export function DataProcessor() {
     }
   };
 
-  const handleJsonSubmit = (jsonText, onSuccess) => {
+  const handleJsonSubmit = (makeOrderDataList = [], onSuccess) => {
     setIsLoading(true);
     try {
-      const jsonData = JSON.parse(jsonText);
-      const processedData = processJsonData(jsonData);
+      const processedData = makeOrderDataList
+        .map((item) => processJsonData(JSON.parse(item.orderData), item.shop))
+        .flat();
       setData(processedData);
       onSuccess();
     } catch (error) {
@@ -58,7 +60,6 @@ export function DataProcessor() {
     // exportToExcel(data);
   };
 
-  console.log(data, 888);
   return (
     <div>
       <div style={{ paddingTop: "1.5rem" }}>
@@ -72,7 +73,7 @@ export function DataProcessor() {
               gap: "0.5rem",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <Space>
               <Button
                 variant="outline"
                 style={{ width: "100%", maxWidth: "auto" }} // w-full sm:w-auto
@@ -114,9 +115,9 @@ export function DataProcessor() {
                 disabled={data.length === 0 || isLoading}
                 style={{ width: "100%", maxWidth: "auto" }} // w-full sm:w-auto
               >
-                导出Excel
+                导出燕文Excel
               </Button>
-            </div>
+            </Space>
             {isLoading && (
               <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
                 处理中，请稍候...

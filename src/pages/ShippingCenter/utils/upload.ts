@@ -1,3 +1,4 @@
+import { uniqueId } from "lodash";
 import {
   ProductInfo,
   ProcessedOrder,
@@ -5,8 +6,9 @@ import {
   JsonData,
   MerchantNote,
 } from "./interface";
+import {v4} from 'uuid'
 
-export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
+export function processJsonData(jsonData: JsonData, shopAbbr): ProcessedOrder[] {
   const processedOrders: ProcessedOrder[] = [];
 
   // Create a map of buyers by buyer_id for quick lookup
@@ -28,8 +30,14 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
       zip: string;
       first_line: string;
       second_line: string;
+      order_id: string,
+      order_date: string,
+      is_gift_wrapped: boolean,
+      gift_message: string,
+      gift_buyer_first_name: string,
       products: ProductInfo[];
       merchant_notes: MerchantNote[];
+      [key: string]: any;
     }
   >();
 
@@ -49,6 +57,8 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
     // Get or create the order entry
     let orderEntry = orderMap.get(addressKey);
 
+    console.log(order, 'order')
+
     if (!orderEntry) {
       orderEntry = {
         buyer_id: buyer.buyer_id,
@@ -60,12 +70,19 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
         zip: to_address.zip || "", // Use zip if it exists, otherwise empty string
         first_line: to_address.first_line,
         second_line: to_address.second_line || "",
+        order_id: order.order_id,
+        order_date: order.order_date,
+        is_gift_wrapped: order.is_gift_wrapped,
+        gift_message: order.gift_message,
+        gift_buyer_first_name: order.gift_buyer_first_name,
+        note_from_buyer: order?.notes?.note_from_buyer,
         products: [],
         merchant_notes: [],
       };
-
+      
       orderMap.set(addressKey, orderEntry);
     }
+
 
     // Add merchant notes if they exist
     if (order.notes && order.notes.private_order_notes) {
@@ -114,6 +131,9 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
 
         if (personalisationVariation) {
           personalisation = personalisationVariation.value || "";
+          if (personalisation === "Not requested on this item.") {
+            personalisation = ""
+          }
         }
       }
 
@@ -145,6 +165,12 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
   orderMap.forEach((entry) => {
     processedOrders.push({
       buyer_id: entry.buyer_id,
+      order_id: entry.order_id,
+      order_date: entry.order_date,
+      is_gift_wrapped: entry.is_gift_wrapped,
+      gift_message: entry.gift_message,
+      gift_buyer_first_name: entry.gift_buyer_first_name,
+      note_from_buyer: entry.note_from_buyer,
       email: entry.email,
       name: entry.name,
       country: entry.country,
@@ -159,6 +185,8 @@ export function processJsonData(jsonData: JsonData): ProcessedOrder[] {
       title: entry.products.map((p) => p.title).join(", "),
       products: entry.products,
       merchant_notes: entry.merchant_notes,
+      __shopAbbr: shopAbbr,
+      __uid: v4()
     });
   });
 
